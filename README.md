@@ -178,4 +178,4 @@ npm run db:migrate   # Migration oluşturma
 
 ## Lisans
 
-Bu proje MIT lisansı altında lisanslanmıştır.
+Bu proje MIT lisansı altında lisanslanmıştır.# geld
