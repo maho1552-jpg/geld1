@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  name      String?
+  bio       String?
+  avatar    String?
+  
+  // Yeni profil alanları
+  age       Int?
+  birthDate DateTime?
+  city      String?
+  country   String?
+  school    String?
+  work      String?
+  jobTitle  String?
+  website   String?
+  
+  // Gizlilik ayarları
+  isPrivate Boolean @default(false)
+  showAge   Boolean @default(true)
+  showLocation Boolean @default(true)
+  showWork  Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Kullanıcının kaydettiği içerikler
+  movies      Movie[]
+  tvShows     TvShow[]
+  music       Music[]
+  restaurants Restaurant[]
+
+  // Sosyal özellikler
+  following   Follow[] @relation("Follower")
+  followers   Follow[] @relation("Following")
+  
+  // Beğeniler ve yorumlar
+  likes       Like[]
+  comments    Comment[]
+  
+  // Tavsiye sistemi
+  sentRecommendations     Recommendation[] @relation("SentRecommendations")
+  receivedRecommendations Recommendation[] @relation("ReceivedRecommendations")
+  
+  // AI profil analizi
+  tasteProfile TasteProfile?
+
+  @@map("users")
+}
+
+model Follow {
+  id          String @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Movie {
+  id          String   @id @default(cuid())
+  userId      String
+  tmdbId      Int?     // The Movie Database ID
+  title       String
+  year        Int?
+  genre       String?  // Comma separated genres
+  director    String?
+  poster      String?
+  rating      Float?   // Kullanıcının verdiği puan (1-10)
+  review      String?
+  watchedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes           Like[]
+  comments        Comment[]
+  recommendations Recommendation[]
+
+  @@map("movies")
+}
+
+model TvShow {
+  id          String   @id @default(cuid())
+  userId      String
+  tmdbId      Int?
+  title       String
+  year        Int?
+  genre       String?  // Comma separated genres
+  seasons     Int?
+  poster      String?
+  rating      Float?
+  review      String?
+  status      String?  // watching, completed, dropped
+  createdAt   DateTime @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes           Like[]
+  comments        Comment[]
+  recommendations Recommendation[]
+
+  @@map("tv_shows")
+}
+
+model Music {
+  id          String   @id @default(cuid())
+  userId      String
+  spotifyId   String?
+  title       String
+  artist      String
+  album       String?
+  genre       String?  // Comma separated genres
+  year        Int?
+  rating      Float?
+  review      String?
+  createdAt   DateTime @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes           Like[]
+  comments        Comment[]
+  recommendations Recommendation[]
+
+  @@map("music")
+}
+
+model Restaurant {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  type        String   // restaurant, cafe, bar, pub
+  cuisine     String?
+  location    String
+  address     String?
+  rating      Float?
+  review      String?
+  priceRange  String?  // $, $$, $$$, $$$$
+  visitedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes           Like[]
+  comments        Comment[]
+  recommendations Recommendation[]
+
+  @@map("restaurants")
+}
+
+model Like {
+  id     String @id @default(cuid())
+  userId String
+  
+  // Polymorphic relation - sadece birisi dolu olacak
+  movieId      String?
+  tvShowId     String?
+  musicId      String?
+  restaurantId String?
+  
+  createdAt DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie      Movie?      @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  tvShow     TvShow?     @relation(fields: [tvShowId], references: [id], onDelete: Cascade)
+  music      Music?      @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@unique([userId, tvShowId])
+  @@unique([userId, musicId])
+  @@unique([userId, restaurantId])
+  @@map("likes")
+}
+
+model Comment {
+  id      String @id @default(cuid())
+  userId  String
+  content String
+  
+  // Polymorphic relation
+  movieId      String?
+  tvShowId     String?
+  musicId      String?
+  restaurantId String?
+  
+  createdAt DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie      Movie?      @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  tvShow     TvShow?     @relation(fields: [tvShowId], references: [id], onDelete: Cascade)
+  music      Music?      @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Recommendation {
+  id          String   @id @default(cuid())
+  fromUserId  String   // Tavsiyeyi veren kullanıcı
+  toUserId    String   // Tavsiyeyi alan kullanıcı
+  type        String   // MOVIE, TV_SHOW, MUSIC, RESTAURANT
+  message     String?  // Kişisel mesaj
+  
+  // İçerik referansları (sadece biri dolu olacak)
+  movieId      String?
+  tvShowId     String?
+  musicId      String?
+  restaurantId String?
+  
+  // AI tavsiyesi mi yoksa kullanıcı tavsiyesi mi
+  isAiGenerated Boolean @default(false)
+  confidence    Float?  // AI güven skoru (0-1)
+  
+  createdAt DateTime @default(now())
+  
+  fromUser   User        @relation("SentRecommendations", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User        @relation("ReceivedRecommendations", fields: [toUserId], references: [id], onDelete: Cascade)
+  movie      Movie?      @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  tvShow     TvShow?     @relation(fields: [tvShowId], references: [id], onDelete: Cascade)
+  music      Music?      @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("recommendations")
+}
+
+model TasteProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  
+  // AI tarafından analiz edilen zevk profili (JSON string olarak)
+  movieGenres      String? // JSON string
+  musicGenres      String? // JSON string
+  cuisineTypes     String? // JSON string
+  personalityTags  String? // Comma separated tags
+  
+  // Benzerlik skorları için kullanılacak
+  tasteVector      String? // JSON string
+  
+  lastAnalyzed DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("taste_profiles")
+}

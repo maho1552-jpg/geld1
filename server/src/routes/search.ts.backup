@@ -1,0 +1,692 @@
+import express from 'express';
+import axios from 'axios';
+import { authMiddleware } from '../middleware/auth';
+
+const router = express.Router();
+
+// TMDB genre mapping
+const MOVIE_GENRES: { [key: number]: string } = {
+  28: 'Aksiyon',
+  12: 'Macera',
+  16: 'Animasyon',
+  35: 'Komedi',
+  80: 'Suç',
+  99: 'Belgesel',
+  18: 'Drama',
+  10751: 'Aile',
+  14: 'Fantastik',
+  36: 'Tarih',
+  27: 'Korku',
+  10402: 'Müzik',
+  9648: 'Gizem',
+  10749: 'Romantik',
+  878: 'Bilim Kurgu',
+  10770: 'TV Film',
+  53: 'Gerilim',
+  10752: 'Savaş',
+  37: 'Vahşi Batı'
+};
+
+const TV_GENRES: { [key: number]: string } = {
+  10759: 'Aksiyon & Macera',
+  16: 'Animasyon',
+  35: 'Komedi',
+  80: 'Suç',
+  99: 'Belgesel',
+  18: 'Drama',
+  10751: 'Aile',
+  10762: 'Çocuk',
+  9648: 'Gizem',
+  10763: 'Haber',
+  10764: 'Reality',
+  10765: 'Bilim Kurgu & Fantastik',
+  10766: 'Pembe Dizi',
+  10767: 'Talk Show',
+  10768: 'Savaş & Politika'
+};
+
+// TMDB API configuration
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_API_KEY = process.env.TMDB_API_KEY || 'demo_key';
+const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
+
+// TMDB API için film arama
+router.get('/movies', authMiddleware, async (req, res) => {
+  try {
+    const { query } = req.query;
+    const searchQuery = typeof query === 'string' ? query : '';
+    
+    if (!searchQuery || searchQuery.length < 2) {
+      return res.json([]);
+    }
+
+    // TMDB API key yoksa mock data döndür
+    if (TMDB_API_KEY === 'demo_key') {
+      const mockResults = [
+        {
+          id: 1,
+          title: `${searchQuery}`,
+          year: 2023,
+          director: 'Christopher Nolan',
+          genre: ['Aksiyon', 'Sci-Fi'],
+          poster: null,
+          tmdbId: 12345,
+          overview: `${searchQuery} hakkında örnek açıklama`
+        },
+        {
+          id: 2,
+          title: `${searchQuery} 2`,
+          year: 2022,
+          director: 'Denis Villeneuve',
+          genre: ['Drama', 'Thriller'],
+          poster: null,
+          tmdbId: 12346,
+          overview: `${searchQuery} 2 hakkında örnek açıklama`
+        },
+        {
+          id: 3,
+          title: `The ${searchQuery}`,
+          year: 2021,
+          director: 'Quentin Tarantino',
+          genre: ['Aksiyon', 'Drama'],
+          poster: null,
+          tmdbId: 12347,
+          overview: `The ${searchQuery} hakkında örnek açıklama`
+        }
+      ];
+      return res.json(mockResults);
+    }
+
+    // Gerçek TMDB API çağrısı (v4 API için Bearer token)
+    const headers: any = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (TMDB_API_KEY.startsWith('eyJ')) {
+      // v4 Bearer token
+      headers['Authorization'] = `Bearer ${TMDB_API_KEY}`;
+    }
+
+    const response = await axios.get(`${TMDB_BASE_URL}/search/movie`, {
+      params: TMDB_API_KEY.startsWith('eyJ') ? {
+        query: searchQuery,
+        language: 'tr-TR',
+        page: 1
+      } : {
+        api_key: TMDB_API_KEY,
+        query: searchQuery,
+        language: 'tr-TR',
+        page: 1
+      },
+      headers,
+      timeout: 5000
+    });
+
+    const results = response.data.results.slice(0, 8).map((movie: any) => ({
+      id: movie.id,
+      title: movie.title,
+      year: movie.release_date ? new Date(movie.release_date).getFullYear() : null,
+      genre: movie.genre_ids ? movie.genre_ids.map((id: number) => MOVIE_GENRES[id]).filter(Boolean) : [],
+      poster: movie.poster_path ? `${TMDB_IMAGE_BASE}${movie.poster_path}` : null,
+      tmdbId: movie.id,
+      overview: movie.overview,
+      originalTitle: movie.original_title,
+      popularity: movie.popularity,
+      voteAverage: movie.vote_average
+    }));
+
+    res.json(results);
+  } catch (error) {
+    console.error('Movie search error:', error);
+    
+    // Hata durumunda fallback mock data
+    const fallbackResults = [
+      {
+        id: 1,
+        title: `${req.query.query}`,
+        year: 2023,
+        director: 'Bilinmeyen Yönetmen',
+        genre: ['Drama'],
+        poster: null,
+        tmdbId: null,
+        overview: 'Açıklama bulunamadı'
+      }
+    ];
+    
+    res.json(fallbackResults);
+  }
+});
+
+// TMDB API için dizi arama
+router.get('/tv-shows', authMiddleware, async (req, res) => {
+  try {
+    const { query } = req.query;
+    const searchQuery = typeof query === 'string' ? query : '';
+    
+    if (!searchQuery || searchQuery.length < 2) {
+      return res.json([]);
+    }
+
+    if (TMDB_API_KEY === 'demo_key') {
+      const mockResults = [
+        {
+          id: 1,
+          title: `${searchQuery} Dizisi`,
+          year: 2023,
+          seasons: 3,
+          genre: ['Drama', 'Gerilim'],
+          poster: null,
+          tmdbId: 54321,
+          overview: `${searchQuery} dizisi hakkında örnek açıklama`
+        },
+        {
+          id: 2,
+          title: `${searchQuery}: The Series`,
+          year: 2022,
+          seasons: 2,
+          genre: ['Komedi', 'Drama'],
+          poster: null,
+          tmdbId: 54322,
+          overview: `${searchQuery} series hakkında örnek açıklama`
+        }
+      ];
+      return res.json(mockResults);
+    }
+
+    const headers: any = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (TMDB_API_KEY.startsWith('eyJ')) {
+      headers['Authorization'] = `Bearer ${TMDB_API_KEY}`;
+    }
+
+    const response = await axios.get(`${TMDB_BASE_URL}/search/tv`, {
+      params: TMDB_API_KEY.startsWith('eyJ') ? {
+        query: searchQuery,
+        language: 'tr-TR',
+        page: 1
+      } : {
+        api_key: TMDB_API_KEY,
+        query: searchQuery,
+        language: 'tr-TR',
+        page: 1
+      },
+      headers,
+      timeout: 5000
+    });
+
+    const results = response.data.results.slice(0, 8).map((show: any) => ({
+      id: show.id,
+      title: show.name,
+      year: show.first_air_date ? new Date(show.first_air_date).getFullYear() : null,
+      seasons: show.number_of_seasons,
+      genre: show.genre_ids ? show.genre_ids.map((id: number) => TV_GENRES[id]).filter(Boolean) : [],
+      poster: show.poster_path ? `${TMDB_IMAGE_BASE}${show.poster_path}` : null,
+      tmdbId: show.id,
+      overview: show.overview,
+      originalName: show.original_name,
+      popularity: show.popularity,
+      voteAverage: show.vote_average
+    }));
+
+    res.json(results);
+  } catch (error) {
+    console.error('TV show search error:', error);
+    
+    const fallbackResults = [
+      {
+        id: 1,
+        title: `${req.query.query} Dizisi`,
+        year: 2023,
+        seasons: 1,
+        genre: ['Drama'],
+        poster: null,
+        tmdbId: null,
+        overview: 'Açıklama bulunamadı'
+      }
+    ];
+    
+    res.json(fallbackResults);
+  }
+});
+
+// Gelişmiş müzik arama - Spotify API entegrasyonu
+router.get('/music', authMiddleware, async (req, res) => {
+  try {
+    const { query } = req.query;
+    const searchQuery = typeof query === 'string' ? query : '';
+    
+    if (!searchQuery || searchQuery.length < 2) {
+      return res.json([]);
+    }
+
+    // Spotify API kullanımı için gerekli değişkenler
+    const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+    const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+
+    // Eğer Spotify API bilgileri varsa gerçek API kullan
+    if (SPOTIFY_CLIENT_ID && SPOTIFY_CLIENT_SECRET && 
+        SPOTIFY_CLIENT_ID !== 'demo_key' && SPOTIFY_CLIENT_SECRET !== 'demo_key') {
+      try {
+        // Spotify Access Token al
+        const tokenResponse = await axios.post('https://accounts.spotify.com/api/token', 
+          'grant_type=client_credentials',
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': `Basic ${Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString('base64')}`
+            },
+            timeout: 5000
+          }
+        );
+
+        const accessToken = tokenResponse.data.access_token;
+
+        // Spotify'da arama yap
+        const searchResponse = await axios.get('https://api.spotify.com/v1/search', {
+          params: {
+            q: searchQuery,
+            type: 'track',
+            limit: 8,
+            market: 'TR'
+          },
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          },
+          timeout: 5000
+        });
+
+        const results = searchResponse.data.tracks.items.map((track: any) => ({
+          id: track.id,
+          title: track.name,
+          artist: track.artists.map((artist: any) => artist.name).join(', '),
+          album: track.album.name,
+          year: track.album.release_date ? new Date(track.album.release_date).getFullYear() : null,
+          genre: track.album.genres || ['Pop'], // Spotify'da genre bilgisi sınırlı
+          spotifyId: track.id,
+          cover: track.album.images[0]?.url || null,
+          popularity: track.popularity,
+          duration: Math.floor(track.duration_ms / 1000),
+          preview_url: track.preview_url,
+          external_url: track.external_urls.spotify
+        }));
+
+        return res.json(results);
+      } catch (spotifyError) {
+        console.error('Spotify API error:', spotifyError);
+        // Spotify hatası durumunda mock data'ya geç
+      }
+    }
+
+    // Gelişmiş mock müzik verileri
+    const musicDatabase = [
+      { artist: 'Tarkan', title: 'Şımarık', album: 'Ölürüm Sana', genre: ['Pop', 'Türk Pop'], year: 1997 },
+      { artist: 'Sezen Aksu', title: 'Gidiyorum', album: 'Gidiyorum', genre: ['Pop', 'Türk Pop'], year: 1996 },
+      { artist: 'Barış Manço', title: 'Dönence', album: 'Dönence', genre: ['Rock', 'Anadolu Rock'], year: 1981 },
+      { artist: 'Ajda Pekkan', title: 'Pet\'r Oil', album: 'Süperstar', genre: ['Pop'], year: 1980 },
+      { artist: 'Müslüm Gürses', title: 'Hangimiz Sevmedik', album: 'Hangimiz Sevmedik', genre: ['Arabesk'], year: 1981 },
+      { artist: 'Adele', title: 'Someone Like You', album: '21', genre: ['Pop', 'Soul'], year: 2011 },
+      { artist: 'Ed Sheeran', title: 'Shape of You', album: '÷', genre: ['Pop'], year: 2017 },
+      { artist: 'The Beatles', title: 'Yesterday', album: 'Help!', genre: ['Rock', 'Pop'], year: 1965 },
+      { artist: 'Queen', title: 'Bohemian Rhapsody', album: 'A Night at the Opera', genre: ['Rock'], year: 1975 },
+      { artist: 'Michael Jackson', title: 'Billie Jean', album: 'Thriller', genre: ['Pop', 'R&B'], year: 1983 },
+      { artist: 'Beyoncé', title: 'Crazy in Love', album: 'Dangerously in Love', genre: ['R&B', 'Pop'], year: 2003 },
+      { artist: 'Taylor Swift', title: 'Shake It Off', album: '1989', genre: ['Pop'], year: 2014 },
+      { artist: 'Drake', title: 'God\'s Plan', album: 'Scorpion', genre: ['Hip-Hop', 'Rap'], year: 2018 },
+      { artist: 'Billie Eilish', title: 'Bad Guy', album: 'When We All Fall Asleep', genre: ['Pop', 'Alternative'], year: 2019 },
+      { artist: 'Dua Lipa', title: 'Levitating', album: 'Future Nostalgia', genre: ['Pop', 'Dance'], year: 2020 },
+      { artist: 'The Weeknd', title: 'Blinding Lights', album: 'After Hours', genre: ['Pop', 'Synthwave'], year: 2020 },
+      { artist: 'Ariana Grande', title: 'Thank U, Next', album: 'Thank U, Next', genre: ['Pop', 'R&B'], year: 2019 },
+      { artist: 'Post Malone', title: 'Circles', album: 'Hollywood\'s Bleeding', genre: ['Pop', 'Hip-Hop'], year: 2019 },
+      { artist: 'Doja Cat', title: 'Say So', album: 'Hot Pink', genre: ['Pop', 'R&B'], year: 2020 },
+      { artist: 'Harry Styles', title: 'Watermelon Sugar', album: 'Fine Line', genre: ['Pop', 'Rock'], year: 2020 }
+    ];
+
+    const searchTerm = searchQuery.toLowerCase();
+    const results = musicDatabase
+      .filter(song => 
+        song.title.toLowerCase().includes(searchTerm) || 
+        song.artist.toLowerCase().includes(searchTerm) ||
+        song.album.toLowerCase().includes(searchTerm)
+      )
+      .slice(0, 8)
+      .map((song, index) => ({
+        id: index + 1,
+        title: song.title,
+        artist: song.artist,
+        album: song.album,
+        year: song.year,
+        genre: song.genre,
+        spotifyId: `mock_${index}`,
+        cover: null,
+        popularity: Math.floor(Math.random() * 100),
+        duration: Math.floor(Math.random() * 180) + 120 // 2-5 dakika arası
+      }));
+
+    res.json(results);
+  } catch (error) {
+    console.error('Music search error:', error);
+    res.status(500).json({ error: 'Müzik arama hatası' });
+  }
+});
+
+// Gelişmiş restoran arama - Google Places API entegrasyonu
+router.get('/restaurants', authMiddleware, async (req, res) => {
+  try {
+    const { query } = req.query;
+    const searchQuery = typeof query === 'string' ? query : '';
+    
+    if (!searchQuery || searchQuery.length < 2) {
+      return res.json([]);
+    }
+
+    // Google Places API kullanımı için gerekli değişkenler
+    const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+    const FOURSQUARE_API_KEY = process.env.FOURSQUARE_API_KEY;
+
+    // Önce Foursquare API'yi dene (daha kolay kurulum)
+    if (FOURSQUARE_API_KEY && FOURSQUARE_API_KEY !== 'demo_key') {
+      try {
+        const foursquareResponse = await axios.get('https://api.foursquare.com/v3/places/search', {
+          params: {
+            query: searchQuery,
+            near: 'Istanbul,Turkey',
+            categories: '13000,13001,13002,13003,13004,13005', // Food & Drink categories
+            limit: 8
+          },
+          headers: {
+            'Authorization': FOURSQUARE_API_KEY,
+            'Accept': 'application/json'
+          },
+          timeout: 5000
+        });
+
+        if (foursquareResponse.data.results && foursquareResponse.data.results.length > 0) {
+          const results = foursquareResponse.data.results.map((place: any, index: number) => ({
+            id: place.fsq_id || `fsq_${index}`,
+            name: place.name,
+            cuisine: place.categories?.[0]?.name || 'Restoran',
+            location: place.location?.formatted_address || `${place.location?.locality || 'İstanbul'}, Türkiye`,
+            address: place.location?.formatted_address || 'Adres bulunamadı',
+            rating: place.rating ? (place.rating / 2).toFixed(1) : (Math.random() * 2 + 3).toFixed(1), // Foursquare 10 üzerinden, biz 5'e çeviriyoruz
+            priceRange: place.price ? '$'.repeat(place.price) : '$',
+            type: place.categories?.[0]?.name?.toLowerCase().includes('cafe') ? 'cafe' : 
+                  place.categories?.[0]?.name?.toLowerCase().includes('bar') ? 'bar' : 'restaurant',
+            googlePlaceId: place.fsq_id,
+            photo: place.photos?.[0] ? `${place.photos[0].prefix}400x400${place.photos[0].suffix}` : null,
+            phone: place.tel,
+            website: place.website,
+            openNow: place.hours?.open_now
+          }));
+
+          return res.json(results);
+        }
+      } catch (foursquareError: any) {
+        console.error('Foursquare API error:', foursquareError.response?.data || foursquareError.message);
+      }
+    }
+
+    // Eğer Google Places API key'i varsa gerçek API kullan
+    if (GOOGLE_PLACES_API_KEY && GOOGLE_PLACES_API_KEY !== 'demo_key') {
+      try {
+        // Google Places New API'yi dene - Ankara için optimize edilmiş arama
+        const placesResponse = await axios.post('https://places.googleapis.com/v1/places:searchText', {
+          textQuery: `${searchQuery} Ankara Turkey restaurant cafe bar`,
+          locationBias: {
+            circle: {
+              center: {
+                latitude: 39.9334, // Ankara koordinatları
+                longitude: 32.8597
+              },
+              radius: 50000.0 // 50km radius - daha dar alan
+            }
+          },
+          maxResultCount: 8,
+          languageCode: 'tr'
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+            'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.types,places.id,places.photos,places.currentOpeningHours'
+          },
+          timeout: 5000
+        });
+
+        if (placesResponse.data.places && placesResponse.data.places.length > 0) {
+          const results = placesResponse.data.places.map((place: any, index: number) => ({
+            id: place.id || `place_${index}`,
+            name: place.displayName?.text || 'Bilinmeyen Mekan',
+            cuisine: place.types?.includes('restaurant') ? 'Restoran' : 
+                     place.types?.includes('cafe') ? 'Kafe' : 
+                     place.types?.includes('bar') ? 'Bar' : 'Mekan',
+            location: place.formattedAddress || 'Adres bulunamadı',
+            address: place.formattedAddress || 'Adres bulunamadı',
+            rating: place.rating || 4.0,
+            priceRange: place.priceLevel ? '$'.repeat(place.priceLevel) : '$',
+            type: place.types?.includes('restaurant') ? 'restaurant' : 
+                  place.types?.includes('cafe') ? 'cafe' : 
+                  place.types?.includes('bar') ? 'bar' : 'restaurant',
+            googlePlaceId: place.id,
+            photo: place.photos && place.photos[0] ? 
+                   `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxWidthPx=400&key=${GOOGLE_PLACES_API_KEY}` : 
+                   null,
+            openNow: place.currentOpeningHours?.openNow
+          }));
+
+          return res.json(results);
+        }
+
+        // Eğer Ankara'da sonuç bulunamazsa, İstanbul'da da dene
+        if (!placesResponse.data.places || placesResponse.data.places.length === 0) {
+          const istanbulResponse = await axios.post('https://places.googleapis.com/v1/places:searchText', {
+            textQuery: `${searchQuery} Istanbul Turkey restaurant cafe bar`,
+            locationBias: {
+              circle: {
+                center: {
+                  latitude: 41.0082, // İstanbul koordinatları
+                  longitude: 28.9784
+                },
+                radius: 50000.0 // 50km radius
+              }
+            },
+            maxResultCount: 8,
+            languageCode: 'tr'
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+              'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.types,places.id,places.photos,places.currentOpeningHours'
+            },
+            timeout: 5000
+          });
+
+          if (istanbulResponse.data.places && istanbulResponse.data.places.length > 0) {
+            const results = istanbulResponse.data.places.map((place: any, index: number) => ({
+              id: place.id || `place_${index}`,
+              name: place.displayName?.text || 'Bilinmeyen Mekan',
+              cuisine: place.types?.includes('restaurant') ? 'Restoran' : 
+                       place.types?.includes('cafe') ? 'Kafe' : 
+                       place.types?.includes('bar') ? 'Bar' : 'Mekan',
+              location: place.formattedAddress || 'Adres bulunamadı',
+              address: place.formattedAddress || 'Adres bulunamadı',
+              rating: place.rating || 4.0,
+              priceRange: place.priceLevel ? '$'.repeat(place.priceLevel) : '$$',
+              type: place.types?.includes('restaurant') ? 'restaurant' : 
+                    place.types?.includes('cafe') ? 'cafe' : 
+                    place.types?.includes('bar') ? 'bar' : 'restaurant',
+              googlePlaceId: place.id,
+              photo: place.photos && place.photos[0] ? 
+                     `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxWidthPx=400&key=${GOOGLE_PLACES_API_KEY}` : 
+                     null,
+              openNow: place.currentOpeningHours?.openNow
+            }));
+
+            return res.json(results);
+          }
+        }
+          textQuery: `${searchQuery} restaurant cafe bar`,
+          locationBias: {
+            circle: {
+              center: {
+                latitude: 41.0082, // İstanbul koordinatları
+                longitude: 28.9784
+              },
+              radius: 100000.0 // 100km radius
+            }
+          },
+          maxResultCount: 8,
+          languageCode: 'tr'
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+            'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.types,places.id,places.photos,places.currentOpeningHours'
+          },
+          timeout: 5000
+        });
+
+        if (istanbulResponse.data.places && istanbulResponse.data.places.length > 0) {
+          const results = istanbulResponse.data.places.map((place: any, index: number) => ({
+            id: place.id || `place_${index}`,
+            name: place.displayName?.text || 'Bilinmeyen Mekan',
+            cuisine: place.types?.includes('restaurant') ? 'Restoran' : 
+                     place.types?.includes('cafe') ? 'Kafe' : 
+                     place.types?.includes('bar') ? 'Bar' : 'Mekan',
+            location: place.formattedAddress || 'Adres bulunamadı',
+            address: place.formattedAddress || 'Adres bulunamadı',
+            rating: place.rating || 4.0,
+            priceRange: place.priceLevel ? '$'.repeat(place.priceLevel) : '$',
+            type: place.types?.includes('restaurant') ? 'restaurant' : 
+                  place.types?.includes('cafe') ? 'cafe' : 
+                  place.types?.includes('bar') ? 'bar' : 'restaurant',
+            googlePlaceId: place.id,
+            photo: place.photos && place.photos[0] ? 
+                   `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxWidthPx=400&key=${GOOGLE_PLACES_API_KEY}` : 
+                   null,
+            openNow: place.currentOpeningHours?.openNow
+          }));
+
+          return res.json(results);
+        }
+      } catch (googleError: any) {
+        console.error('Google Places API error:', {
+          message: googleError.message,
+          response: googleError.response?.data,
+          status: googleError.response?.status,
+          config: {
+            url: googleError.config?.url,
+            method: googleError.config?.method,
+            headers: googleError.config?.headers
+          }
+        });
+      }
+    }
+
+    // Gelişmiş mock restoran verileri
+    const restaurantDatabase = [
+      { name: 'McDonald\'s', cuisine: 'Fast Food', type: 'restaurant', priceRange: '$', city: 'İstanbul' },
+      { name: 'Burger King', cuisine: 'Fast Food', type: 'restaurant', priceRange: '$', city: 'İstanbul' },
+      { name: 'KFC', cuisine: 'Fast Food', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Starbucks', cuisine: 'Kahve & Tatlı', type: 'cafe', priceRange: '$$', city: 'İstanbul' },
+      { name: 'Kahve Dünyası', cuisine: 'Kahve & Tatlı', type: 'cafe', priceRange: '$', city: 'İzmir' },
+      { name: 'Pandora', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$$', city: 'İstanbul' },
+      { name: 'Nusr-Et', cuisine: 'Et & Steakhouse', type: 'restaurant', priceRange: '$$$', city: 'İstanbul' },
+      { name: 'Çiya Sofrası', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$$', city: 'İstanbul' },
+      { name: 'Hamdi Restaurant', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$$', city: 'İstanbul' },
+      { name: 'Sunset Grill & Bar', cuisine: 'Uluslararası', type: 'restaurant', priceRange: '$$$', city: 'İstanbul' },
+      { name: 'Pizza Hut', cuisine: 'İtalyan', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Domino\'s Pizza', cuisine: 'İtalyan', type: 'restaurant', priceRange: '$', city: 'İzmir' },
+      { name: 'Sushi Co', cuisine: 'Japon', type: 'restaurant', priceRange: '$$', city: 'İstanbul' },
+      { name: 'Zuma', cuisine: 'Japon', type: 'restaurant', priceRange: '$$$', city: 'İstanbul' },
+      { name: 'Mikla', cuisine: 'Modern Türk', type: 'restaurant', priceRange: '$$$', city: 'İstanbul' },
+      { name: 'Karaköy Lokantası', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$$', city: 'İstanbul' },
+      { name: 'Maiden\'s Tower Restaurant', cuisine: 'Uluslararası', type: 'restaurant', priceRange: '$$$', city: 'İstanbul' },
+      { name: 'Feriye Palace', cuisine: 'Osmanlı Mutfağı', type: 'restaurant', priceRange: '$$$', city: 'İstanbul' },
+      { name: 'Lacivert Restaurant', cuisine: 'Balık & Deniz Ürünleri', type: 'restaurant', priceRange: '$$', city: 'İstanbul' },
+      { name: 'Vogue Restaurant', cuisine: 'Uluslararası', type: 'restaurant', priceRange: '$$$', city: 'İstanbul' },
+      { name: 'Gloria Jean\'s', cuisine: 'Kahve & Tatlı', type: 'cafe', priceRange: '$$', city: 'Ankara' },
+      { name: 'Mado', cuisine: 'Dondurma & Tatlı', type: 'cafe', priceRange: '$', city: 'İzmir' },
+      { name: 'Saray Muhallebicisi', cuisine: 'Tatlı & Muhallebi', type: 'cafe', priceRange: '$', city: 'İstanbul' },
+      { name: 'Koçak Baklava', cuisine: 'Baklava & Tatlı', type: 'cafe', priceRange: '$', city: 'Gaziantep' },
+      { name: 'Hacı Abdullah', cuisine: 'Osmanlı Mutfağı', type: 'restaurant', priceRange: '$$', city: 'İstanbul' },
+      
+      // Ankara'daki popüler yerel mekanlar
+      { name: 'Aspava', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Ankuva', cuisine: 'Modern Türk', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Yelken Balık', cuisine: 'Balık & Deniz Ürünleri', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Panora', cuisine: 'Uluslararası', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Trilye Restaurant', cuisine: 'Balık & Deniz Ürünleri', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Washington Restaurant', cuisine: 'Et & Steakhouse', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Kızılkayalar', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Uludag Kebapçısı', cuisine: 'Kebap & Et', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Çengelhan Brasserie', cuisine: 'Fransız Mutfağı', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Zenger Paşa Konağı', cuisine: 'Osmanlı Mutfağı', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Kale Washington', cuisine: 'Et & Steakhouse', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Divan Brasserie', cuisine: 'Uluslararası', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Köşebaşı', cuisine: 'Kebap & Et', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Develi', cuisine: 'Kebap & Et', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Hacı Arif Bey', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$$', city: 'Ankara' }
+    ];
+
+    const searchTerm = searchQuery.toLowerCase();
+    
+    // Gelişmiş arama algoritması - Türkçe karakterleri normalize et
+    const normalizeText = (text: string) => {
+      return text.toLowerCase()
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ı/g, 'i')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c');
+    };
+    
+    const normalizedSearchTerm = normalizeText(searchQuery);
+    
+    const results = restaurantDatabase
+      .filter(restaurant => {
+        const normalizedName = normalizeText(restaurant.name);
+        const normalizedCuisine = normalizeText(restaurant.cuisine);
+        const normalizedCity = normalizeText(restaurant.city);
+        
+        // Tam eşleşme kontrolü
+        if (normalizedName.includes(normalizedSearchTerm) || 
+            normalizedCuisine.includes(normalizedSearchTerm) ||
+            normalizedCity.includes(normalizedSearchTerm)) {
+          return true;
+        }
+        
+        // Kelime kelime arama - her kelimeyi ayrı ayrı kontrol et
+        const searchWords = normalizedSearchTerm.split(' ').filter(word => word.length > 1);
+        return searchWords.some(word => 
+          normalizedName.includes(word) ||
+          normalizedCuisine.includes(word) ||
+          normalizedCity.includes(word)
+        );
+      })
+      .slice(0, 8)
+      .map((restaurant, index) => ({
+        id: index + 1,
+        name: restaurant.name,
+        cuisine: restaurant.cuisine,
+        location: `${restaurant.city}, Türkiye`,
+        address: `Örnek Mahalle, Örnek Sokak No:${index + 1}, ${restaurant.city}`,
+        rating: (Math.random() * 2 + 3).toFixed(1), // 3.0 - 5.0 arası
+        priceRange: restaurant.priceRange,
+        type: restaurant.type,
+        googlePlaceId: `mock_place_${index}`,
+        phone: `+90 ${restaurant.city === 'İstanbul' ? '212' : restaurant.city === 'Ankara' ? '312' : '232'} ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 90) + 10} ${Math.floor(Math.random() * 90) + 10}`,
+        website: `https://www.${restaurant.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
+        openNow: Math.random() > 0.3, // %70 ihtimalle açık
+        photo: null
+      }));
+
+    res.json(results);
+  } catch (error) {
+    console.error('Restaurant search error:', error);
+    res.status(500).json({ error: 'Restoran arama hatası' });
+  }
+});
+
+export default router;

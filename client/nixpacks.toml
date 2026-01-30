@@ -1,0 +1,8 @@
+[phases.build]
+cmds = ["npm install", "npm run build"]
+
+[phases.deploy]
+cmd = "npx serve -s dist -l 3000"
+
+[variables]
+NODE_ENV = "production"
