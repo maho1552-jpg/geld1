@@ -39,10 +39,10 @@ app.get('/api/health', (req, res) => {
         DATABASE_URL: process.env.DATABASE_URL ? 'Connected' : 'Missing'
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ 
       status: 'ERROR', 
-      message: error.message 
+      message: error.message || 'Unknown error'
     });
   }
 });
@@ -66,10 +66,10 @@ app.get('/api/db-test', async (req, res) => {
       message: 'Database connected successfully',
       userCount: userCount
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ 
       status: 'ERROR', 
-      message: error.message,
+      message: error.message || 'Database connection failed',
       error: error.toString()
     });
   }
