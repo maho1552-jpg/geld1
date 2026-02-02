@@ -2,11 +2,12 @@
   "name": "geld-server",
   "version": "1.0.0",
   "description": "Backend for Geld social media app",
-  "main": "dist/app.js",
+  "main": "src/app.ts",
   "scripts": {
     "dev": "nodemon src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
+    "start:dev": "ts-node src/app.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
