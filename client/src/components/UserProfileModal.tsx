@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, MapPin, Briefcase, Calendar, Globe, UserPlus, UserMinus, Loader, Film, Tv, Music, MapPin as Restaurant, Star, Clapperboard, Monitor, Headphones } from 'lucide-react';
+import { X, MapPin, Briefcase, Calendar, Globe, UserPlus, UserMinus, Loader, MapPin as Restaurant, Star, Clapperboard, Monitor, Headphones } from 'lucide-react';
 import { friendsService, User } from '../services/friendsService';
 
 interface UserProfileModalProps {
