@@ -47,6 +47,34 @@ app.get('/api/health', (req, res) => {
   }
 });
 
+// Database test
+app.get('/api/db-test', async (req, res) => {
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    
+    // Test database connection
+    await prisma.$connect();
+    
+    // Test User table
+    const userCount = await prisma.user.count();
+    
+    await prisma.$disconnect();
+    
+    res.json({ 
+      status: 'OK', 
+      message: 'Database connected successfully',
+      userCount: userCount
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: error.message,
+      error: error.toString()
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
