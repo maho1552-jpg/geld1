@@ -142,10 +142,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onAddContent, onNavi
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard title="Filmler" value={stats.movies} />
-          <StatCard title="Diziler" value={stats.tvShows} />
-          <StatCard title="Müzikler" value={stats.music} />
-          <StatCard title="Mekanlar" value={stats.restaurants} />
+          <StatCard 
+            title="Filmler" 
+            value={stats.movies} 
+            onAdd={() => onAddContent('movie')}
+          />
+          <StatCard 
+            title="Diziler" 
+            value={stats.tvShows} 
+            onAdd={() => onAddContent('tvshow')}
+          />
+          <StatCard 
+            title="Müzikler" 
+            value={stats.music} 
+            onAdd={() => onAddContent('music')}
+          />
+          <StatCard 
+            title="Mekanlar" 
+            value={stats.restaurants} 
+            onAdd={() => onAddContent('restaurant')}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -257,13 +273,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onAddContent, onNavi
 const StatCard: React.FC<{
   title: string;
   value: number;
-}> = ({ title, value }) => (
-  <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+  onAdd: () => void;
+}> = ({ title, value, onAdd }) => (
+  <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 group hover:border-gray-700 transition-colors">
     <div className="flex items-center justify-between">
-      <div>
+      <div className="flex-1">
         <p className="text-sm text-gray-400">{title}</p>
         <p className="text-2xl font-semibold text-white mt-1">{value}</p>
       </div>
+      <button
+        onClick={onAdd}
+        className="w-8 h-8 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200"
+        title={`${title} Ekle`}
+      >
+        <svg className="w-4 h-4 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
     </div>
   </div>
 );

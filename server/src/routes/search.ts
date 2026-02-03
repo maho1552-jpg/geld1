@@ -867,7 +867,242 @@ router.get('/music', authMiddleware, async (req, res) => {
       { artist: 'Prince', title: 'Purple Rain', album: 'Purple Rain', genre: ['Rock', 'R&B'], year: 1984 },
       { artist: 'Usher', title: 'Yeah!', album: 'Confessions', genre: ['R&B', 'Hip Hop'], year: 2004 },
       { artist: 'Chris Brown', title: 'Forever', album: 'Exclusive', genre: ['R&B', 'Pop'], year: 2007 },
-      { artist: 'Frank Ocean', title: 'Thinkin Bout You', album: 'Channel Orange', genre: ['R&B', 'Alternative'], year: 2012 }
+      { artist: 'Frank Ocean', title: 'Thinkin Bout You', album: 'Channel Orange', genre: ['R&B', 'Alternative'], year: 2012 },
+      
+      // GÜNCEL TÜRK SANATÇILAR (2020-2024)
+      // Türk Pop - Güncel
+      { artist: 'Edis', title: 'Çok Çok', album: 'Çok Çok', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      { artist: 'Edis', title: 'Martılar', album: 'Martılar', genre: ['Pop', 'Türk Pop'], year: 2021 },
+      { artist: 'Edis', title: 'Benim Ol', album: 'Benim Ol', genre: ['Pop', 'Türk Pop'], year: 2019 },
+      { artist: 'Edis', title: 'Dudak', album: 'Dudak', genre: ['Pop', 'Türk Pop'], year: 2022 },
+      
+      { artist: 'Reynmen', title: 'Derdim Olsun', album: 'Derdim Olsun', genre: ['Pop', 'Türk Pop'], year: 2018 },
+      { artist: 'Reynmen', title: 'Ela', album: 'Ela', genre: ['Pop', 'Türk Pop'], year: 2019 },
+      { artist: 'Reynmen', title: 'Leila', album: 'Leila', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      { artist: 'Reynmen', title: 'Yoksun', album: 'Yoksun', genre: ['Pop', 'Türk Pop'], year: 2021 },
+      
+      { artist: 'Aleyna Tilki', title: 'Cevapsız Çınlama', album: 'Cevapsız Çınlama', genre: ['Pop', 'Türk Pop'], year: 2017 },
+      { artist: 'Aleyna Tilki', title: 'Sen Olsan Bari', album: 'Sen Olsan Bari', genre: ['Pop', 'Türk Pop'], year: 2018 },
+      { artist: 'Aleyna Tilki', title: 'Retrograde', album: 'Retrograde', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      { artist: 'Aleyna Tilki', title: 'Yalnız Çiçek', album: 'Yalnız Çiçek', genre: ['Pop', 'Türk Pop'], year: 2021 },
+      
+      { artist: 'Simge', title: 'Miş Miş', album: 'Miş Miş', genre: ['Pop', 'Türk Pop'], year: 2016 },
+      { artist: 'Simge', title: 'Yankı', album: 'Yankı', genre: ['Pop', 'Türk Pop'], year: 2018 },
+      { artist: 'Simge', title: 'Aşkın Olayım', album: 'Aşkın Olayım', genre: ['Pop', 'Türk Pop'], year: 2019 },
+      { artist: 'Simge', title: 'Ben Bazen', album: 'Ben Bazen', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      
+      { artist: 'Murat Boz', title: 'Janti', album: 'Janti', genre: ['Pop', 'Türk Pop'], year: 2018 },
+      { artist: 'Murat Boz', title: 'Öpücem', album: 'Öpücem', genre: ['Pop', 'Türk Pop'], year: 2019 },
+      { artist: 'Murat Boz', title: 'Adını Bilen Yazsın', album: 'Adını Bilen Yazsın', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      { artist: 'Murat Boz', title: 'Hayat Öpücüğü', album: 'Hayat Öpücüğü', genre: ['Pop', 'Türk Pop'], year: 2021 },
+      
+      { artist: 'Berkay', title: 'Gel Gör Beni Aşk Neyledi', album: 'Gel Gör Beni Aşk Neyledi', genre: ['Pop', 'Türk Pop'], year: 2019 },
+      { artist: 'Berkay', title: 'Yağmur', album: 'Yağmur', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      { artist: 'Berkay', title: 'Sessizce', album: 'Sessizce', genre: ['Pop', 'Türk Pop'], year: 2021 },
+      
+      { artist: 'Sefo', title: 'Konuşmuyoruz', album: 'Konuşmuyoruz', genre: ['Hip Hop', 'Türk Rap'], year: 2020 },
+      { artist: 'Sefo', title: 'Çok Güzel Hareketler', album: 'Çok Güzel Hareketler', genre: ['Hip Hop', 'Türk Rap'], year: 2021 },
+      { artist: 'Sefo', title: 'Patron', album: 'Patron', genre: ['Hip Hop', 'Türk Rap'], year: 2022 },
+      
+      { artist: 'Murda', title: 'Çok Şükür', album: 'Çok Şükür', genre: ['Hip Hop', 'Türk Rap'], year: 2019 },
+      { artist: 'Murda', title: 'Bak Hele Şu Halime', album: 'Bak Hele Şu Halime', genre: ['Hip Hop', 'Türk Rap'], year: 2020 },
+      { artist: 'Murda', title: 'Made in Turkey', album: 'Made in Turkey', genre: ['Hip Hop', 'Türk Rap'], year: 2021 },
+      
+      { artist: 'Lvbel C5', title: 'Uçurum', album: 'Uçurum', genre: ['Hip Hop', 'Türk Rap'], year: 2021 },
+      { artist: 'Lvbel C5', title: 'Habibi', album: 'Habibi', genre: ['Hip Hop', 'Türk Rap'], year: 2022 },
+      { artist: 'Lvbel C5', title: 'Şeytan Diyor Ki', album: 'Şeytan Diyor Ki', genre: ['Hip Hop', 'Türk Rap'], year: 2023 },
+      
+      { artist: 'Batuflex', title: 'Hayat Hikayem', album: 'Hayat Hikayem', genre: ['Hip Hop', 'Türk Rap'], year: 2021 },
+      { artist: 'Batuflex', title: 'Patron Benim', album: 'Patron Benim', genre: ['Hip Hop', 'Türk Rap'], year: 2022 },
+      
+      { artist: 'Ati242', title: 'Gece Gündüz', album: 'Gece Gündüz', genre: ['Hip Hop', 'Türk Rap'], year: 2020 },
+      { artist: 'Ati242', title: 'Kafam Güzel', album: 'Kafam Güzel', genre: ['Hip Hop', 'Türk Rap'], year: 2021 },
+      
+      { artist: 'Şanışer', title: 'Susamam', album: 'Susamam', genre: ['Hip Hop', 'Türk Rap'], year: 2019 },
+      { artist: 'Şanışer', title: 'Gelsin Hayat Bildiği Gibi', album: 'Gelsin Hayat Bildiği Gibi', genre: ['Hip Hop', 'Türk Rap'], year: 2020 },
+      
+      { artist: 'Mero', title: 'Baller Los', album: 'Baller Los', genre: ['Hip Hop', 'Türk Rap'], year: 2019 },
+      { artist: 'Mero', title: 'Wolke 10', album: 'Wolke 10', genre: ['Hip Hop', 'Türk Rap'], year: 2020 },
+      
+      { artist: 'Semicenk', title: 'Hoşgeldin', album: 'Hoşgeldin', genre: ['Hip Hop', 'Türk Rap'], year: 2020 },
+      { artist: 'Semicenk', title: 'Yine Yeni Yeniden', album: 'Yine Yeni Yeniden', genre: ['Hip Hop', 'Türk Rap'], year: 2021 },
+      
+      { artist: 'Baneva', title: 'Salla', album: 'Salla', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      { artist: 'Baneva', title: 'Gel Yanıma', album: 'Gel Yanıma', genre: ['Pop', 'Türk Pop'], year: 2021 },
+      
+      { artist: 'Zeynep Bastık', title: 'Felaket', album: 'Felaket', genre: ['Pop', 'Türk Pop'], year: 2019 },
+      { artist: 'Zeynep Bastık', title: 'Uslanmıyor Bu', album: 'Uslanmıyor Bu', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      { artist: 'Zeynep Bastık', title: 'Yalan', album: 'Yalan', genre: ['Pop', 'Türk Pop'], year: 2021 },
+      
+      { artist: 'Sıla', title: 'Yan Benimle', album: 'Yan Benimle', genre: ['Pop', 'Türk Pop'], year: 2019 },
+      { artist: 'Sıla', title: 'Afitap', album: 'Afitap', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      { artist: 'Sıla', title: 'Boş Yere', album: 'Boş Yere', genre: ['Pop', 'Türk Pop'], year: 2021 },
+      
+      { artist: 'Gülşen', title: 'Bangır Bangır', album: 'Bangır Bangır', genre: ['Pop', 'Türk Pop'], year: 2019 },
+      { artist: 'Gülşen', title: 'Yurtta Barış Dünyada Barış', album: 'Yurtta Barış Dünyada Barış', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      
+      { artist: 'Mabel Matiz', title: 'Gözlerinin Etrafındaki Çizgiler', album: 'Gözlerinin Etrafındaki Çizgiler', genre: ['Alternative', 'Türk Pop'], year: 2019 },
+      { artist: 'Mabel Matiz', title: 'Yaşım Çok Büyük', album: 'Yaşım Çok Büyük', genre: ['Alternative', 'Türk Pop'], year: 2020 },
+      { artist: 'Mabel Matiz', title: 'Gel', album: 'Gel', genre: ['Alternative', 'Türk Pop'], year: 2021 },
+      
+      { artist: 'Buray', title: 'Sahiden', album: 'Sahiden', genre: ['Pop', 'Türk Pop'], year: 2019 },
+      { artist: 'Buray', title: 'Deli Kızım Uyan', album: 'Deli Kızım Uyan', genre: ['Pop', 'Türk Pop'], year: 2020 },
+      { artist: 'Buray', title: 'Mecburum', album: 'Mecburum', genre: ['Pop', 'Türk Pop'], year: 2021 },
+      
+      { artist: 'Çağın Kuşağı', title: 'Gece Gölgenin Rahatına Bak', album: 'Gece Gölgenin Rahatına Bak', genre: ['Rock', 'Alternative'], year: 2020 },
+      { artist: 'Çağın Kuşağı', title: 'Hayat Bayram Olsa', album: 'Hayat Bayram Olsa', genre: ['Rock', 'Alternative'], year: 2021 },
+      
+      // GÜNCEL ULUSLARARASI SANATÇILAR (2020-2024)
+      // Pop - Güncel
+      { artist: 'Olivia Rodrigo', title: 'drivers license', album: 'SOUR', genre: ['Pop'], year: 2021 },
+      { artist: 'Olivia Rodrigo', title: 'good 4 u', album: 'SOUR', genre: ['Pop', 'Rock'], year: 2021 },
+      { artist: 'Olivia Rodrigo', title: 'vampire', album: 'GUTS', genre: ['Pop'], year: 2023 },
+      { artist: 'Olivia Rodrigo', title: 'bad idea right?', album: 'GUTS', genre: ['Pop'], year: 2023 },
+      
+      { artist: 'Harry Styles', title: 'Watermelon Sugar', album: 'Fine Line', genre: ['Pop'], year: 2020 },
+      { artist: 'Harry Styles', title: 'As It Was', album: 'Harry\'s House', genre: ['Pop'], year: 2022 },
+      { artist: 'Harry Styles', title: 'Music for a Sushi Restaurant', album: 'Harry\'s House', genre: ['Pop'], year: 2022 },
+      { artist: 'Harry Styles', title: 'Golden', album: 'Fine Line', genre: ['Pop'], year: 2020 },
+      
+      { artist: 'Doja Cat', title: 'Say So', album: 'Hot Pink', genre: ['Pop', 'R&B'], year: 2020 },
+      { artist: 'Doja Cat', title: 'Kiss Me More', album: 'Planet Her', genre: ['Pop', 'R&B'], year: 2021 },
+      { artist: 'Doja Cat', title: 'Woman', album: 'Planet Her', genre: ['Pop', 'R&B'], year: 2021 },
+      { artist: 'Doja Cat', title: 'Paint The Town Red', album: 'Scarlet', genre: ['Pop', 'R&B'], year: 2023 },
+      
+      { artist: 'Lorde', title: 'Solar Power', album: 'Solar Power', genre: ['Pop', 'Alternative'], year: 2021 },
+      { artist: 'Lorde', title: 'Mood Ring', album: 'Solar Power', genre: ['Pop', 'Alternative'], year: 2021 },
+      { artist: 'Lorde', title: 'Stoned at the Nail Salon', album: 'Solar Power', genre: ['Pop', 'Alternative'], year: 2021 },
+      
+      { artist: 'Lana Del Rey', title: 'Chemtrails Over the Country Club', album: 'Chemtrails Over the Country Club', genre: ['Pop', 'Alternative'], year: 2021 },
+      { artist: 'Lana Del Rey', title: 'Ocean Blvd', album: 'Did you know that there\'s a tunnel under Ocean Blvd', genre: ['Pop', 'Alternative'], year: 2023 },
+      { artist: 'Lana Del Rey', title: 'A&W', album: 'Did you know that there\'s a tunnel under Ocean Blvd', genre: ['Pop', 'Alternative'], year: 2023 },
+      
+      { artist: 'SZA', title: 'Good Days', album: 'SOS', genre: ['R&B', 'Pop'], year: 2021 },
+      { artist: 'SZA', title: 'I Hate U', album: 'SOS', genre: ['R&B', 'Pop'], year: 2022 },
+      { artist: 'SZA', title: 'Kill Bill', album: 'SOS', genre: ['R&B', 'Pop'], year: 2022 },
+      { artist: 'SZA', title: 'Shirt', album: 'SOS', genre: ['R&B', 'Pop'], year: 2022 },
+      
+      { artist: 'Bad Bunny', title: 'Yonaguni', album: 'El Último Tour Del Mundo', genre: ['Reggaeton', 'Latin'], year: 2021 },
+      { artist: 'Bad Bunny', title: 'Me Porto Bonito', album: 'Un Verano Sin Ti', genre: ['Reggaeton', 'Latin'], year: 2022 },
+      { artist: 'Bad Bunny', title: 'Tití Me Preguntó', album: 'Un Verano Sin Ti', genre: ['Reggaeton', 'Latin'], year: 2022 },
+      { artist: 'Bad Bunny', title: 'Moscow Mule', album: 'Un Verano Sin Ti', genre: ['Reggaeton', 'Latin'], year: 2022 },
+      
+      { artist: 'Rosalía', title: 'La Fama', album: 'MOTOMAMI', genre: ['Latin', 'Pop'], year: 2022 },
+      { artist: 'Rosalía', title: 'Despechá', album: 'MOTOMAMI+', genre: ['Latin', 'Pop'], year: 2022 },
+      { artist: 'Rosalía', title: 'BIZCOCHITO', album: 'MOTOMAMI', genre: ['Latin', 'Pop'], year: 2022 },
+      
+      { artist: 'Lizzo', title: 'About Damn Time', album: 'Special', genre: ['Pop', 'R&B'], year: 2022 },
+      { artist: 'Lizzo', title: 'Break Up Twice', album: 'Special', genre: ['Pop', 'R&B'], year: 2022 },
+      { artist: 'Lizzo', title: 'Special', album: 'Special', genre: ['Pop', 'R&B'], year: 2022 },
+      
+      { artist: 'Sabrina Carpenter', title: 'Nonsense', album: 'emails i can\'t send', genre: ['Pop'], year: 2022 },
+      { artist: 'Sabrina Carpenter', title: 'Feather', album: 'emails i can\'t send fwd:', genre: ['Pop'], year: 2023 },
+      { artist: 'Sabrina Carpenter', title: 'Espresso', album: 'Short n\' Sweet', genre: ['Pop'], year: 2024 },
+      
+      { artist: 'Gracie Abrams', title: 'Mess It Up', album: 'Good Riddance', genre: ['Pop', 'Alternative'], year: 2023 },
+      { artist: 'Gracie Abrams', title: 'I should hate you', album: 'Good Riddance', genre: ['Pop', 'Alternative'], year: 2023 },
+      
+      { artist: 'Phoebe Bridgers', title: 'Kyoto', album: 'Punisher', genre: ['Indie', 'Alternative'], year: 2020 },
+      { artist: 'Phoebe Bridgers', title: 'I Know the End', album: 'Punisher', genre: ['Indie', 'Alternative'], year: 2020 },
+      
+      { artist: 'Clairo', title: 'Blouse', album: 'Sling', genre: ['Indie', 'Pop'], year: 2021 },
+      { artist: 'Clairo', title: 'Amoeba', album: 'Sling', genre: ['Indie', 'Pop'], year: 2021 },
+      
+      { artist: 'Mitski', title: 'The Only Heartbreaker', album: 'Laurel Hell', genre: ['Indie', 'Alternative'], year: 2022 },
+      { artist: 'Mitski', title: 'Working for the Knife', album: 'Laurel Hell', genre: ['Indie', 'Alternative'], year: 2021 },
+      
+      // Hip Hop - Güncel
+      { artist: 'Lil Nas X', title: 'MONTERO (Call Me By Your Name)', album: 'MONTERO', genre: ['Hip Hop', 'Pop'], year: 2021 },
+      { artist: 'Lil Nas X', title: 'Industry Baby', album: 'MONTERO', genre: ['Hip Hop', 'Pop'], year: 2021 },
+      { artist: 'Lil Nas X', title: 'THATS WHAT I WANT', album: 'MONTERO', genre: ['Hip Hop', 'Pop'], year: 2021 },
+      
+      { artist: 'Dua Lipa', title: 'Physical', album: 'Future Nostalgia', genre: ['Pop', 'Dance'], year: 2020 },
+      { artist: 'Dua Lipa', title: 'Break My Heart', album: 'Future Nostalgia', genre: ['Pop', 'Dance'], year: 2020 },
+      { artist: 'Dua Lipa', title: 'Love Again', album: 'Future Nostalgia', genre: ['Pop', 'Dance'], year: 2021 },
+      
+      { artist: 'The Weeknd', title: 'Save Your Tears', album: 'After Hours', genre: ['Pop', 'R&B'], year: 2020 },
+      { artist: 'The Weeknd', title: 'Take My Breath', album: 'Dawn FM', genre: ['Pop', 'R&B'], year: 2021 },
+      { artist: 'The Weeknd', title: 'Sacrifice', album: 'Dawn FM', genre: ['Pop', 'R&B'], year: 2022 },
+      
+      { artist: 'Ariana Grande', title: 'positions', album: 'Positions', genre: ['Pop', 'R&B'], year: 2020 },
+      { artist: 'Ariana Grande', title: '34+35', album: 'Positions', genre: ['Pop', 'R&B'], year: 2020 },
+      { artist: 'Ariana Grande', title: 'pov', album: 'Positions', genre: ['Pop', 'R&B'], year: 2020 },
+      
+      { artist: 'Billie Eilish', title: 'Therefore I Am', album: 'Therefore I Am', genre: ['Pop', 'Alternative'], year: 2020 },
+      { artist: 'Billie Eilish', title: 'Your Power', album: 'Happier Than Ever', genre: ['Pop', 'Alternative'], year: 2021 },
+      { artist: 'Billie Eilish', title: 'Lost Cause', album: 'Happier Than Ever', genre: ['Pop', 'Alternative'], year: 2021 },
+      
+      { artist: 'Taylor Swift', title: 'cardigan', album: 'folklore', genre: ['Pop', 'Alternative'], year: 2020 },
+      { artist: 'Taylor Swift', title: 'willow', album: 'evermore', genre: ['Pop', 'Alternative'], year: 2020 },
+      { artist: 'Taylor Swift', title: 'Lavender Haze', album: 'Midnights', genre: ['Pop'], year: 2022 },
+      { artist: 'Taylor Swift', title: 'Karma', album: 'Midnights', genre: ['Pop'], year: 2022 },
+      
+      { artist: 'Doja Cat', title: 'Need to Know', album: 'Planet Her', genre: ['Pop', 'R&B'], year: 2021 },
+      { artist: 'Doja Cat', title: 'Get Into It (Yuh)', album: 'Planet Her', genre: ['Pop', 'R&B'], year: 2021 },
+      
+      // Electronic - Güncel
+      { artist: 'Glass Animals', title: 'Heat Waves', album: 'Dreamland', genre: ['Indie', 'Electronic'], year: 2020 },
+      { artist: 'Glass Animals', title: 'Tokyo Drifting', album: 'Dreamland', genre: ['Indie', 'Electronic'], year: 2020 },
+      
+      { artist: 'Tame Impala', title: 'Is It True', album: 'The Slow Rush', genre: ['Psychedelic', 'Electronic'], year: 2020 },
+      { artist: 'Tame Impala', title: 'Breathe Deeper', album: 'The Slow Rush', genre: ['Psychedelic', 'Electronic'], year: 2020 },
+      
+      { artist: 'Disclosure', title: 'My High', album: 'Energy', genre: ['Electronic', 'House'], year: 2020 },
+      { artist: 'Disclosure', title: 'Douha (Mali Mali)', album: 'Energy', genre: ['Electronic', 'House'], year: 2020 },
+      
+      { artist: 'Flume', title: 'The Difference', album: 'Palaces', genre: ['Electronic', 'Future Bass'], year: 2022 },
+      { artist: 'Flume', title: 'Say Nothing', album: 'Palaces', genre: ['Electronic', 'Future Bass'], year: 2022 },
+      
+      // Rock - Güncel
+      { artist: 'Måneskin', title: 'Beggin\'', album: 'Chosen', genre: ['Rock', 'Alternative'], year: 2021 },
+      { artist: 'Måneskin', title: 'I WANNA BE YOUR SLAVE', album: 'Teatro d\'ira: Vol. I', genre: ['Rock', 'Alternative'], year: 2021 },
+      { artist: 'Måneskin', title: 'MAMMAMIA', album: 'Teatro d\'ira: Vol. I', genre: ['Rock', 'Alternative'], year: 2021 },
+      
+      { artist: 'Imagine Dragons', title: 'Enemy', album: 'Mercury – Acts 1 & 2', genre: ['Rock', 'Alternative'], year: 2021 },
+      { artist: 'Imagine Dragons', title: 'Bones', album: 'Mercury – Acts 1 & 2', genre: ['Rock', 'Alternative'], year: 2022 },
+      { artist: 'Imagine Dragons', title: 'Sharks', album: 'Mercury – Acts 1 & 2', genre: ['Rock', 'Alternative'], year: 2022 },
+      
+      { artist: 'Twenty One Pilots', title: 'Shy Away', album: 'Scaled and Icy', genre: ['Rock', 'Alternative'], year: 2021 },
+      { artist: 'Twenty One Pilots', title: 'Saturday', album: 'Scaled and Icy', genre: ['Rock', 'Alternative'], year: 2021 },
+      { artist: 'Twenty One Pilots', title: 'Overcompensate', album: 'Clancy', genre: ['Rock', 'Alternative'], year: 2024 },
+      
+      { artist: 'My Chemical Romance', title: 'The Foundations of Decay', album: 'The Foundations of Decay', genre: ['Rock', 'Alternative'], year: 2022 },
+      
+      { artist: 'Paramore', title: 'This Is Why', album: 'This Is Why', genre: ['Rock', 'Alternative'], year: 2023 },
+      { artist: 'Paramore', title: 'The News', album: 'This Is Why', genre: ['Rock', 'Alternative'], year: 2023 },
+      
+      { artist: 'Arctic Monkeys', title: 'There\'d Better Be A Mirrorball', album: 'The Car', genre: ['Rock', 'Alternative'], year: 2022 },
+      { artist: 'Arctic Monkeys', title: 'Body Paint', album: 'The Car', genre: ['Rock', 'Alternative'], year: 2022 },
+      
+      // K-Pop - Güncel
+      { artist: 'BTS', title: 'Dynamite', album: 'BE', genre: ['K-Pop', 'Pop'], year: 2020 },
+      { artist: 'BTS', title: 'Butter', album: 'Butter', genre: ['K-Pop', 'Pop'], year: 2021 },
+      { artist: 'BTS', title: 'Permission to Dance', album: 'Permission to Dance', genre: ['K-Pop', 'Pop'], year: 2021 },
+      { artist: 'BTS', title: 'Yet To Come', album: 'Proof', genre: ['K-Pop', 'Pop'], year: 2022 },
+      
+      { artist: 'BLACKPINK', title: 'How You Like That', album: 'THE ALBUM', genre: ['K-Pop', 'Pop'], year: 2020 },
+      { artist: 'BLACKPINK', title: 'Ice Cream', album: 'THE ALBUM', genre: ['K-Pop', 'Pop'], year: 2020 },
+      { artist: 'BLACKPINK', title: 'Lovesick Girls', album: 'THE ALBUM', genre: ['K-Pop', 'Pop'], year: 2020 },
+      { artist: 'BLACKPINK', title: 'Pink Venom', album: 'BORN PINK', genre: ['K-Pop', 'Pop'], year: 2022 },
+      { artist: 'BLACKPINK', title: 'Shut Down', album: 'BORN PINK', genre: ['K-Pop', 'Pop'], year: 2022 },
+      
+      { artist: 'NewJeans', title: 'Attention', album: 'NewJeans', genre: ['K-Pop', 'Pop'], year: 2022 },
+      { artist: 'NewJeans', title: 'Hype Boy', album: 'NewJeans', genre: ['K-Pop', 'Pop'], year: 2022 },
+      { artist: 'NewJeans', title: 'Cookie', album: 'NewJeans', genre: ['K-Pop', 'Pop'], year: 2022 },
+      { artist: 'NewJeans', title: 'OMG', album: 'Get Up', genre: ['K-Pop', 'Pop'], year: 2023 },
+      
+      { artist: 'IVE', title: 'LOVE DIVE', album: 'LOVE DIVE', genre: ['K-Pop', 'Pop'], year: 2022 },
+      { artist: 'IVE', title: 'After LIKE', album: 'After LIKE', genre: ['K-Pop', 'Pop'], year: 2022 },
+      { artist: 'IVE', title: 'I AM', album: 'I\'ve IVE', genre: ['K-Pop', 'Pop'], year: 2023 },
+      
+      { artist: 'aespa', title: 'Next Level', album: 'Savage', genre: ['K-Pop', 'Pop'], year: 2021 },
+      { artist: 'aespa', title: 'Savage', album: 'Savage', genre: ['K-Pop', 'Pop'], year: 2021 },
+      { artist: 'aespa', title: 'Girls', album: 'Girls', genre: ['K-Pop', 'Pop'], year: 2022 },
+      { artist: 'aespa', title: 'Spicy', album: 'MY WORLD', genre: ['K-Pop', 'Pop'], year: 2023 },
+      
+      { artist: 'ITZY', title: 'LOCO', album: 'CRAZY IN LOVE', genre: ['K-Pop', 'Pop'], year: 2021 },
+      { artist: 'ITZY', title: 'SNEAKERS', album: 'CHECKMATE', genre: ['K-Pop', 'Pop'], year: 2022 },
+      { artist: 'ITZY', title: 'CAKE', album: 'KILL MY DOUBT', genre: ['K-Pop', 'Pop'], year: 2023 }
     ];
 
     // Türkçe karakter normalizasyonu
