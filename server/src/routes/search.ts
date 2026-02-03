@@ -1133,7 +1133,55 @@ router.get('/restaurants', authMiddleware, async (req, res) => {
       { name: 'Buddha Bar', cuisine: 'Bar & Kokteyl', type: 'bar', priceRange: '$$$', city: 'Ankara' },
       { name: 'Jolly Joker Pub', cuisine: 'Pub & Bar', type: 'bar', priceRange: '$$', city: 'Ankara' },
       { name: 'Rock Bar', cuisine: 'Bar & Müzik', type: 'bar', priceRange: '$$', city: 'Ankara' },
-      { name: 'Nardis Jazz Club', cuisine: 'Jazz & Bar', type: 'bar', priceRange: '$$$', city: 'Ankara' }
+      { name: 'Nardis Jazz Club', cuisine: 'Jazz & Bar', type: 'bar', priceRange: '$$$', city: 'Ankara' },
+      
+      // Yeni Eklenen Ankara Mekanları
+      { name: 'Çankaya Köşkü Restaurant', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$$$$', city: 'Ankara' },
+      { name: 'Atakule Dönen Restaurant', cuisine: 'Uluslararası', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Gordion Restaurant', cuisine: 'Modern Türk', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Kızılay Meydanı Cafe', cuisine: 'Kahve & Tatlı', type: 'cafe', priceRange: '$$', city: 'Ankara' },
+      { name: 'Tunalı Hilmi Bistro', cuisine: 'Bistro', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Bahçelievler Pide', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Çayyolu AVM Food Court', cuisine: 'Fast Food', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Bilkent Center Restaurants', cuisine: 'Uluslararası', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Armada AVM Yemek Katı', cuisine: 'Çeşitli', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Ankamall Food Court', cuisine: 'Fast Food', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      
+      // Geleneksel Ankara Mekanları
+      { name: 'Hamamönü Konakları', cuisine: 'Geleneksel Türk', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Altındağ Sofrası', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Keçiören Pidecisi', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Mamak Dönerci', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Yenimahalle Kebap', cuisine: 'Kebap & Et', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Sincan Et Lokantası', cuisine: 'Et & Steakhouse', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Polatlı Tava', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Gölbaşı Balık Restaurant', cuisine: 'Balık & Deniz Ürünleri', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Beypazarı Kurusu Restaurant', cuisine: 'Geleneksel Türk', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Ayaş Sofrası', cuisine: 'Türk Mutfağı', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      
+      // Modern Kafeler ve Restoranlar
+      { name: 'Next Level Cafe', cuisine: 'Modern Cafe', type: 'cafe', priceRange: '$$', city: 'Ankara' },
+      { name: 'Rooftop Restaurant', cuisine: 'Modern Türk', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Garden Bistro', cuisine: 'Bistro', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Urban Kitchen', cuisine: 'Fusion', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Craft Beer House', cuisine: 'Pub & Bira', type: 'bar', priceRange: '$$', city: 'Ankara' },
+      { name: 'Wine House Ankara', cuisine: 'Şarap & Meze', type: 'bar', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Sushi Zen', cuisine: 'Japon Mutfağı', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Taco Bell Ankara', cuisine: 'Meksika Mutfağı', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Subway Ankara', cuisine: 'Fast Food', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Popeyes Ankara', cuisine: 'Fast Food', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      
+      // Özel Konsept Mekanlar
+      { name: 'Kitap Cafe', cuisine: 'Kahve & Kitap', type: 'cafe', priceRange: '$$', city: 'Ankara' },
+      { name: 'Board Game Cafe', cuisine: 'Oyun & Kahve', type: 'cafe', priceRange: '$$', city: 'Ankara' },
+      { name: 'Art Gallery Restaurant', cuisine: 'Sanat & Yemek', type: 'restaurant', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Music Lounge', cuisine: 'Müzik & Bar', type: 'bar', priceRange: '$$$', city: 'Ankara' },
+      { name: 'Hookah Lounge', cuisine: 'Nargile & Çay', type: 'cafe', priceRange: '$$', city: 'Ankara' },
+      { name: 'Breakfast Palace', cuisine: 'Kahvaltı', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Vegan Corner', cuisine: 'Vegan', type: 'restaurant', priceRange: '$$', city: 'Ankara' },
+      { name: 'Organic Market Cafe', cuisine: 'Organik', type: 'cafe', priceRange: '$$', city: 'Ankara' },
+      { name: 'Street Food Corner', cuisine: 'Sokak Lezzeti', type: 'restaurant', priceRange: '$', city: 'Ankara' },
+      { name: 'Dessert Heaven', cuisine: 'Tatlı & Dondurma', type: 'cafe', priceRange: '$$', city: 'Ankara' }
     ];
 
     // Türkçe karakter normalizasyonu
