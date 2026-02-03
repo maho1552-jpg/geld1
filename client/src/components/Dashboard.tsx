@@ -235,35 +235,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onAddContent, onNavi
             </div>
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <div className="mt-8">
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <h2 className="text-lg font-medium text-white mb-4">Hızlı İşlemler</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <QuickActionCard 
-                title="Film Ekle" 
-                description="Yeni film ekle" 
-                onClick={() => onAddContent('movie')}
-              />
-              <QuickActionCard 
-                title="Dizi Ekle" 
-                description="Yeni dizi ekle" 
-                onClick={() => onAddContent('tvshow')}
-              />
-              <QuickActionCard 
-                title="Müzik Ekle" 
-                description="Yeni müzik ekle" 
-                onClick={() => onAddContent('music')}
-              />
-              <QuickActionCard 
-                title="Mekan Ekle" 
-                description="Yeni mekan ekle" 
-                onClick={() => onAddContent('restaurant')}
-              />
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -324,18 +295,4 @@ const ActivityItem: React.FC<{ activity: any }> = ({ activity }) => (
       {activity.time}
     </div>
   </div>
-);
-
-const QuickActionCard: React.FC<{
-  title: string;
-  description: string;
-  onClick: () => void;
-}> = ({ title, description, onClick }) => (
-  <button 
-    onClick={onClick}
-    className="text-left p-4 border border-gray-800 rounded-lg hover:border-gray-700 hover:bg-gray-800 transition-colors"
-  >
-    <h3 className="text-sm font-medium text-white">{title}</h3>
-    <p className="text-xs text-gray-500 mt-1">{description}</p>
-  </button>
 );
