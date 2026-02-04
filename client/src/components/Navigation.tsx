@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Home, User, Plus, LogOut, Sparkles, Menu, X, UserPlus } from 'lucide-react';
 
 interface NavigationProps {
-  currentPage: 'dashboard' | 'profile' | 'recommendations';
-  onNavigate: (page: 'dashboard' | 'profile' | 'recommendations') => void;
+  currentPage: 'dashboard' | 'profile' | 'recommendations' | 'friends';
+  onNavigate: (page: 'dashboard' | 'profile' | 'recommendations' | 'friends') => void;
   onAddContent: () => void;
   onAddFriend: () => void;
   onLogout: () => void;
@@ -21,31 +21,36 @@ export const Navigation: React.FC<NavigationProps> = ({
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const navItems = [
-    { id: 'dashboard', label: 'Ana Sayfa', icon: Home },
     { id: 'recommendations', label: 'Öneriler', icon: Sparkles },
-    { id: 'profile', label: 'Profil', icon: User },
+    { id: 'friends', label: 'Arkadaşlar', icon: UserPlus },
   ];
 
   return (
     <nav className="bg-black border-b border-gray-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
+          {/* Logo - Clickable */}
+          <button 
+            onClick={() => onNavigate('dashboard')}
+            className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+          >
             <div className="w-8 h-8 bg-gray-800/50 border border-gray-700/50 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">G</span>
             </div>
             <h1 className="text-xl font-semibold text-white">
               Geld
             </h1>
-          </div>
+          </button>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => onNavigate(item.id as any)}
+                onClick={() => {
+                  console.log('Navigating to:', item.id);
+                  onNavigate(item.id as 'dashboard' | 'profile' | 'recommendations' | 'friends');
+                }}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   currentPage === item.id
                     ? 'bg-gray-800 text-white'
@@ -60,27 +65,14 @@ export const Navigation: React.FC<NavigationProps> = ({
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={onAddContent}
-              className="bg-gray-800/50 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-700/50 transition-colors flex items-center space-x-2 border border-gray-700/50"
-            >
-              <Plus size={16} />
-              <span>Ekle</span>
-            </button>
-            
-            <button
-              onClick={onAddFriend}
-              className="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-600/30 transition-colors flex items-center space-x-2 border border-blue-600/30"
-            >
-              <UserPlus size={16} />
-              <span>Arkadaş</span>
-            </button>
-            
             <div className="flex items-center space-x-3">
-              <div className="text-right">
+              <button 
+                onClick={() => onNavigate('profile')}
+                className="text-right hover:bg-gray-900 px-3 py-2 rounded-lg transition-colors"
+              >
                 <p className="text-sm font-medium text-white">{user?.name || user?.username}</p>
                 <p className="text-xs text-gray-400">@{user?.username}</p>
-              </div>
+              </button>
               
               <button
                 onClick={onLogout}
@@ -111,7 +103,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 <button
                   key={item.id}
                   onClick={() => {
-                    onNavigate(item.id as any);
+                    onNavigate(item.id as 'dashboard' | 'profile' | 'recommendations' | 'friends');
                     setShowMobileMenu(false);
                   }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
@@ -128,24 +120,13 @@ export const Navigation: React.FC<NavigationProps> = ({
               <div className="border-t border-gray-800 pt-4 mt-4">
                 <button
                   onClick={() => {
-                    onAddContent();
+                    onNavigate('profile');
                     setShowMobileMenu(false);
                   }}
-                  className="w-full bg-gray-800/50 text-white px-4 py-3 rounded-xl text-sm font-medium hover:bg-gray-700/50 transition-colors flex items-center justify-center space-x-2 border border-gray-700/50 mb-2"
+                  className="w-full text-gray-400 px-4 py-3 rounded-lg text-sm font-medium hover:text-white hover:bg-gray-900 transition-colors flex items-center justify-center space-x-2"
                 >
-                  <Plus size={16} />
-                  <span>İçerik Ekle</span>
-                </button>
-                
-                <button
-                  onClick={() => {
-                    onAddFriend();
-                    setShowMobileMenu(false);
-                  }}
-                  className="w-full bg-blue-600/20 text-blue-400 px-4 py-3 rounded-xl text-sm font-medium hover:bg-blue-600/30 transition-colors flex items-center justify-center space-x-2 border border-blue-600/30"
-                >
-                  <UserPlus size={16} />
-                  <span>Arkadaş Ekle</span>
+                  <User size={16} />
+                  <span>Profil</span>
                 </button>
                 
                 <button

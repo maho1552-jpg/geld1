@@ -17,24 +17,32 @@ api.interceptors.request.use((config) => {
 
 export const recommendationService = {
   async analyzeTaste() {
+    console.log('=== API CALL: analyzeTaste ===');
     const response = await api.post('/recommendations/analyze-taste');
+    console.log('analyzeTaste response:', response.data);
     return response.data;
   },
 
   async getSimilarUsers(limit = 10) {
+    console.log('=== API CALL: getSimilarUsers ===');
     const response = await api.get(`/recommendations/similar-users?limit=${limit}`);
+    console.log('getSimilarUsers response:', response.data);
     return response.data;
   },
 
   // Hibrit AI önerileri (AI + Collaborative)
   async getAISuggestions(type: 'MOVIE' | 'TV_SHOW' | 'MUSIC' | 'RESTAURANT') {
+    console.log('=== API CALL: getAISuggestions ===', type);
     const response = await api.get(`/recommendations/ai-suggestions/${type}`);
+    console.log('getAISuggestions response:', response.data);
     return response.data;
   },
 
   // Sadece AI önerileri
   async getAIOnlySuggestions(type: 'MOVIE' | 'TV_SHOW' | 'MUSIC' | 'RESTAURANT') {
+    console.log('=== API CALL: getAIOnlySuggestions ===', type);
     const response = await api.get(`/recommendations/ai-only/${type}`);
+    console.log('getAIOnlySuggestions response:', response.data);
     return response.data;
   },
 

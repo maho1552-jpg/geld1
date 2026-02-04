@@ -11,15 +11,22 @@ router.post('/register', async (req, res) => {
   try {
     const { email, username, password, name } = req.body;
 
-    // Kullanıcı zaten var mı kontrol et
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email }, { username }]
-      }
+    // Email zaten kullanımda mı kontrol et
+    const existingEmail = await prisma.user.findUnique({
+      where: { email }
     });
 
-    if (existingUser) {
-      return res.status(400).json({ error: 'Email veya kullanıcı adı zaten kullanımda' });
+    if (existingEmail) {
+      return res.status(400).json({ error: 'Bu email adresi zaten kullanımda' });
+    }
+
+    // Username zaten kullanımda mı kontrol et
+    const existingUsername = await prisma.user.findUnique({
+      where: { username }
+    });
+
+    if (existingUsername) {
+      return res.status(400).json({ error: 'Bu kullanıcı adı zaten kullanımda' });
     }
 
     // Şifreyi hashle

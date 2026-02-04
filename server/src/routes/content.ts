@@ -1,6 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware } from '../middleware/auth';
+import { recommendationService } from '../services/recommendationService';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -8,6 +9,9 @@ const prisma = new PrismaClient();
 // Film ekle
 router.post('/movies', authMiddleware, async (req, res) => {
   try {
+    console.log('POST /movies - Request body:', req.body);
+    console.log('POST /movies - User ID:', req.user.userId);
+    
     const { title, year, genre, director, rating, review, tmdbId, poster } = req.body;
     const userId = req.user.userId;
 
@@ -26,6 +30,15 @@ router.post('/movies', authMiddleware, async (req, res) => {
       },
     });
 
+    // Zevk profilini güncelle
+    try {
+      await recommendationService.analyzeUserTaste(userId);
+    } catch (error) {
+      console.error('Taste profile update error:', error);
+      // Hata olsa bile film ekleme başarılı sayılsın
+    }
+
+    console.log('POST /movies - Created movie:', movie);
     res.status(201).json(movie);
   } catch (error) {
     console.error('Add movie error:', error);
@@ -36,6 +49,9 @@ router.post('/movies', authMiddleware, async (req, res) => {
 // Dizi ekle
 router.post('/tv-shows', authMiddleware, async (req, res) => {
   try {
+    console.log('POST /tv-shows - Request body:', req.body);
+    console.log('POST /tv-shows - User ID:', req.user.userId);
+    
     const { title, year, genre, seasons, rating, review, status, tmdbId, poster } = req.body;
     const userId = req.user.userId;
 
@@ -54,6 +70,15 @@ router.post('/tv-shows', authMiddleware, async (req, res) => {
       },
     });
 
+    // Zevk profilini güncelle
+    try {
+      await recommendationService.analyzeUserTaste(userId);
+    } catch (error) {
+      console.error('Taste profile update error:', error);
+      // Hata olsa bile dizi ekleme başarılı sayılsın
+    }
+
+    console.log('POST /tv-shows - Created TV show:', tvShow);
     res.status(201).json(tvShow);
   } catch (error) {
     console.error('Add TV show error:', error);
@@ -64,7 +89,10 @@ router.post('/tv-shows', authMiddleware, async (req, res) => {
 // Müzik ekle
 router.post('/music', authMiddleware, async (req, res) => {
   try {
-    const { title, artist, album, genre, year, rating, review, spotifyId } = req.body;
+    console.log('POST /music - Request body:', req.body);
+    console.log('POST /music - User ID:', req.user.userId);
+    
+    const { title, artist, album, genre, year, rating, review, itunesId } = req.body;
     const userId = req.user.userId;
 
     const music = await prisma.music.create({
@@ -77,10 +105,19 @@ router.post('/music', authMiddleware, async (req, res) => {
         year: year ? parseInt(year) : null,
         rating: rating ? parseFloat(rating) : null,
         review,
-        spotifyId,
+        itunesId: itunesId ? String(itunesId) : null,
       },
     });
 
+    // Zevk profilini güncelle
+    try {
+      await recommendationService.analyzeUserTaste(userId);
+    } catch (error) {
+      console.error('Taste profile update error:', error);
+      // Hata olsa bile müzik ekleme başarılı sayılsın
+    }
+
+    console.log('POST /music - Created music:', music);
     res.status(201).json(music);
   } catch (error) {
     console.error('Add music error:', error);
@@ -91,6 +128,9 @@ router.post('/music', authMiddleware, async (req, res) => {
 // Restoran ekle
 router.post('/restaurants', authMiddleware, async (req, res) => {
   try {
+    console.log('POST /restaurants - Request body:', req.body);
+    console.log('POST /restaurants - User ID:', req.user.userId);
+    
     const { name, type, cuisine, location, address, rating, review, priceRange, visitedAt } = req.body;
     const userId = req.user.userId;
 
@@ -109,6 +149,15 @@ router.post('/restaurants', authMiddleware, async (req, res) => {
       },
     });
 
+    // Zevk profilini güncelle
+    try {
+      await recommendationService.analyzeUserTaste(userId);
+    } catch (error) {
+      console.error('Taste profile update error:', error);
+      // Hata olsa bile restoran ekleme başarılı sayılsın
+    }
+
+    console.log('POST /restaurants - Created restaurant:', restaurant);
     res.status(201).json(restaurant);
   } catch (error) {
     console.error('Add restaurant error:', error);
@@ -173,6 +222,68 @@ router.get('/stats', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Get stats error:', error);
     res.status(500).json({ error: 'İstatistikler getirilirken hata oluştu' });
+  }
+});
+
+// Kullanıcının içeriklerini getir (arkadaşlar için)
+router.get('/user/:userId', authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const requesterId = req.user.userId;
+
+    // Kullanıcının gizlilik ayarlarını kontrol et
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isPrivate: true }
+    });
+
+    if (!targetUser) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    }
+
+    // Eğer profil gizliyse ve takip etmiyorsa erişim engelle
+    if (targetUser.isPrivate && requesterId !== userId) {
+      const isFollowing = await prisma.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: requesterId,
+            followingId: userId
+          }
+        }
+      });
+
+      if (!isFollowing) {
+        return res.status(403).json({ error: 'Bu profil gizli' });
+      }
+    }
+
+    const [movies, tvShows, music, restaurants] = await Promise.all([
+      prisma.movie.findMany({
+        where: { userId: userId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      prisma.tvShow.findMany({
+        where: { userId: userId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      prisma.music.findMany({
+        where: { userId: userId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      prisma.restaurant.findMany({
+        where: { userId: userId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+    ]);
+
+    res.json({ movies, tvShows, music, restaurants });
+  } catch (error) {
+    console.error('Get user content error:', error);
+    res.status(500).json({ error: 'İçerik getirilirken hata oluştu' });
   }
 });
 

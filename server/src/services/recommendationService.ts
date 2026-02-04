@@ -189,7 +189,8 @@ export class RecommendationService {
       return await aiRecommendationService.generatePersonalizedRecommendations(userId, type, 8);
     } catch (error) {
       console.error('Error generating AI-only recommendations:', error);
-      return [];
+      // Fallback öneriler döndür
+      return await aiRecommendationService.getFallbackRecommendations(type, 8, userId);
     }
   }
 

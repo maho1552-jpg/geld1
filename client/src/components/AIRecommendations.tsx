@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Brain, Users, RefreshCw, Filter, Star, ChevronDown } from 'lucide-react';
+import { Sparkles, Brain, Users, RefreshCw, Filter, Star, ChevronDown, Clapperboard, Monitor, Headphones, MapPin, Plus } from 'lucide-react';
 import { recommendationService } from '../services/recommendationService';
+import { contentService } from '../services/contentService';
 
 interface AIRecommendationsProps {
   user: any;
+  onContentAdded?: () => void;
 }
 
-export const AIRecommendations: React.FC<AIRecommendationsProps> = () => {
+export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentAdded }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'movies' | 'tvshows' | 'music' | 'restaurants'>('all');
   const [recommendationType, setRecommendationType] = useState<'hybrid' | 'smart-only' | 'collaborative'>('hybrid');
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [addingItems, setAddingItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchRecommendations();
@@ -64,17 +67,191 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = () => {
 
   const getRecommendationsByType = async (type: 'MOVIE' | 'TV_SHOW' | 'MUSIC' | 'RESTAURANT') => {
     try {
+      console.log('=== FETCHING RECOMMENDATIONS ===');
+      console.log('Recommendation type filter:', recommendationType);
+      console.log('Content type:', type);
+      
+      let result;
       switch (recommendationType) {
         case 'smart-only':
-          return await recommendationService.getAIOnlySuggestions(type);
+          console.log('Calling getAIOnlySuggestions');
+          result = await recommendationService.getAIOnlySuggestions(type);
+          break;
         case 'collaborative':
-          return await recommendationService.getCollaborativeSuggestions(type);
+          console.log('Calling getCollaborativeSuggestions');
+          result = await recommendationService.getCollaborativeSuggestions(type);
+          break;
         default:
-          return await recommendationService.getAISuggestions(type);
+          console.log('Calling getAISuggestions (hybrid)');
+          result = await recommendationService.getAISuggestions(type);
+          break;
       }
+      
+      console.log('API result:', result);
+      return result;
     } catch (error) {
       console.error(`Error fetching ${type} recommendations:`, error);
+      console.error('Full error details:', error.response?.data || error.message);
       return [];
+    }
+  };
+
+  const addToList = async (recommendation: any) => {
+    const itemId = recommendation.id || `${recommendation.title || recommendation.name}-${recommendation.type}`;
+    
+    console.log('=== ADDING RECOMMENDATION START ===');
+    console.log('Item ID:', itemId);
+    console.log('Already adding?', addingItems.has(itemId));
+    
+    if (addingItems.has(itemId)) return;
+    
+    setAddingItems(prev => new Set(prev).add(itemId));
+    
+    try {
+      console.log('Adding recommendation:', recommendation);
+      console.log('Recommendation source:', recommendation.source);
+      console.log('Recommendation type:', recommendation.type);
+      console.log('Type check - is MOVIE?', recommendation.type === 'MOVIE');
+      console.log('Type check - is TV_SHOW?', recommendation.type === 'TV_SHOW');
+      console.log('Type check - is MUSIC?', recommendation.type === 'MUSIC');
+      console.log('Type check - is RESTAURANT?', recommendation.type === 'RESTAURANT');
+      console.log('Type typeof:', typeof recommendation.type);
+      console.log('Type length:', recommendation.type?.length);
+      
+      let result: any;
+      
+      // Tüm öneriler için aynı işlemi yap
+      let type = (recommendation.type || '').toUpperCase().trim();
+      
+      // Eğer type yoksa, objenin alanlarına bakarak tahmin et
+      if (!type) {
+        console.log('Type is missing, trying to detect from object fields...');
+        if (recommendation.tmdbId || recommendation.director || (recommendation.title && !recommendation.artist && !recommendation.cuisine)) {
+          type = 'MOVIE';
+          console.log('Detected as MOVIE');
+        } else if (recommendation.artist || recommendation.album) {
+          type = 'MUSIC';
+          console.log('Detected as MUSIC');
+        } else if (recommendation.cuisine || recommendation.location) {
+          type = 'RESTAURANT';
+          console.log('Detected as RESTAURANT');
+        } else if (recommendation.seasons) {
+          type = 'TV_SHOW';
+          console.log('Detected as TV_SHOW');
+        } else {
+          // Varsayılan olarak MOVIE kabul et (çoğu öneri film)
+          type = 'MOVIE';
+          console.log('Defaulting to MOVIE');
+        }
+      }
+      
+      console.log('Final processed type:', type);
+      
+      switch (type) {
+        case 'MOVIE':
+          result = await contentService.addMovie({
+            title: recommendation.title || recommendation.name,
+            year: recommendation.year,
+            genre: recommendation.genre,
+            director: recommendation.director,
+            rating: 5,
+            review: 'Öneri listesinden eklendi',
+            poster: recommendation.poster,
+            tmdbId: recommendation.tmdbId
+          });
+          break;
+        case 'TV_SHOW':
+        case 'TVSHOW':
+        case 'TV':
+          result = await contentService.addTVShow({
+            title: recommendation.title || recommendation.name,
+            year: recommendation.year,
+            genre: recommendation.genre,
+            seasons: recommendation.seasons,
+            rating: 5,
+            review: 'Öneri listesinden eklendi',
+            poster: recommendation.poster,
+            tmdbId: recommendation.tmdbId
+          });
+          break;
+        case 'MUSIC':
+          result = await contentService.addMusic({
+            title: recommendation.title,
+            artist: recommendation.artist,
+            album: recommendation.album,
+            genre: recommendation.genre,
+            year: recommendation.year,
+            rating: 5,
+            review: 'Öneri listesinden eklendi'
+          });
+          break;
+        case 'RESTAURANT':
+          result = await contentService.addRestaurant({
+            name: recommendation.name || recommendation.title,
+            cuisine: recommendation.cuisine,
+            location: recommendation.location,
+            rating: 5,
+            review: 'Öneri listesinden eklendi'
+          });
+          break;
+        default:
+          console.error('Unknown recommendation type:', recommendation.type);
+          console.error('Processed type:', type);
+          console.error('Full recommendation object:', recommendation);
+          throw new Error(`Geçersiz öneri türü: "${recommendation.type}" (processed: "${type}")`);
+      }
+      
+      console.log('=== CONTENT ADDED SUCCESSFULLY ===');
+      console.log('Result:', result);
+      
+      // Success message
+      alert(`${recommendation.title || recommendation.name} başarıyla eklendi!`);
+      
+      // Notify parent component that content was added
+      if (onContentAdded) {
+        console.log('Calling onContentAdded callback');
+        onContentAdded();
+      }
+      
+      // Remove from recommendations after successful add
+      console.log('Removing from recommendations list');
+      console.log('Current recommendations count:', recommendations.length);
+      console.log('Item ID to remove:', itemId);
+      
+      setRecommendations(prev => {
+        console.log('Before filter - recommendations count:', prev.length);
+        const filtered = prev.filter(rec => {
+          const recId = rec.id || `${rec.title || rec.name}-${rec.type}`;
+          const shouldKeep = recId !== itemId;
+          if (!shouldKeep) {
+            console.log('Removing recommendation:', rec.title || rec.name, 'with ID:', recId);
+          }
+          return shouldKeep;
+        });
+        console.log('After filter - recommendations count:', filtered.length);
+        return filtered;
+      });
+      
+      // Refresh recommendations to get new ones based on updated taste
+      console.log('Scheduling recommendations refresh in 1 second');
+      setTimeout(() => {
+        console.log('=== REFRESHING RECOMMENDATIONS AFTER ADD ===');
+        fetchRecommendations();
+      }, 1000); // 1 saniye bekle ki backend'de yeni içerik işlensin
+      
+    } catch (error: any) {
+      console.error('=== ERROR ADDING RECOMMENDATION ===');
+      console.error('Error adding to list:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      alert(`Ekleme sırasında hata oluştu: ${error.response?.data?.error || error.message}`);
+    } finally {
+      console.log('=== CLEANING UP ===');
+      setAddingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+      console.log('=== ADDING RECOMMENDATION END ===');
     }
   };
 
@@ -101,26 +278,33 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = () => {
     <div className="min-h-screen bg-black">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="bg-gradient-to-br from-black via-gray-900 to-purple-900 border border-gray-800/50 rounded-xl p-8 mb-8 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-white mb-2">
-                Öneriler
-              </h1>
-              <p className="text-gray-400">
-                Zevklerinize göre kişiselleştirilmiş öneriler
-              </p>
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center icon-gradient-bg">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-white">
+                    Akıllı Öneriler
+                  </h1>
+                  <p className="text-gray-300">
+                    Zevklerinize göre kişiselleştirilmiş öneriler
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               {lastUpdated && (
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-400">
                   Son güncelleme: {lastUpdated.toLocaleTimeString('tr-TR')}
                 </span>
               )}
               <button
                 onClick={fetchRecommendations}
                 disabled={isLoading}
-                className="bg-gray-800/50 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-700/50 transition-colors flex items-center space-x-2 disabled:opacity-50 border border-gray-700/50"
+                className="bg-gradient-to-r from-purple-600 to-black text-white px-6 py-3 rounded-xl text-sm font-medium hover:from-purple-700 hover:to-gray-900 transition-all duration-300 flex items-center space-x-2 disabled:opacity-50 border border-purple-500/30 shadow-lg hover:shadow-purple-500/25"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                 <span>Yenile</span>
@@ -130,18 +314,18 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-8">
+        <div className="bg-gradient-to-br from-gray-900 via-black to-purple-900/50 border border-gray-800/50 rounded-xl p-6 mb-8 backdrop-blur-sm">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             {/* Category Tabs */}
-            <div className="flex space-x-1 bg-gray-800 rounded-lg p-1">
+            <div className="flex space-x-1 bg-black/50 rounded-xl p-1 border border-gray-800/50">
               {tabItems.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                     activeTab === tab.id
-                      ? 'bg-gray-700 text-white'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'bg-gradient-to-r from-purple-600 to-black text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
                   }`}
                 >
                   {tab.label}
@@ -151,15 +335,15 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = () => {
 
             {/* Recommendation Type Filter */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-gray-400">
-                <Filter className="w-4 h-4" />
+              <div className="flex items-center space-x-2 text-gray-300">
+                <Filter className="w-4 h-4 icon-gradient" />
                 <span className="text-sm">Öneri Türü:</span>
               </div>
               <div className="relative">
                 <select
                   value={recommendationType}
                   onChange={(e) => setRecommendationType(e.target.value as any)}
-                  className="appearance-none bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gray-600 focus:border-transparent"
+                  className="appearance-none bg-black/50 border border-gray-700/50 rounded-xl px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm"
                 >
                   <option value="hybrid">Hibrit (Akıllı + Kullanıcılar)</option>
                   <option value="smart-only">Sadece Akıllı</option>
@@ -175,41 +359,49 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = () => {
         <div className="space-y-6">
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-              <p className="text-gray-400">Öneriler hazırlanıyor...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
+              <p className="text-gray-300">Öneriler hazırlanıyor...</p>
             </div>
           ) : recommendations.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-8 h-8 text-gray-600" />
+              <div className="w-16 h-16 bg-gradient-to-br from-gray-800 to-purple-900/50 rounded-xl flex items-center justify-center mx-auto mb-4 border border-gray-700/50">
+                <Sparkles className="w-8 h-8 icon-gradient" />
               </div>
-              <p className="text-gray-400 mb-2">Henüz öneri yok</p>
-              <p className="text-sm text-gray-500">
+              <p className="text-gray-300 mb-2">Henüz öneri yok</p>
+              <p className="text-sm text-gray-400">
                 Daha fazla içerik ekleyerek kişiselleştirilmiş öneriler alabilirsin
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recommendations.map((rec, index) => (
-                <RecommendationCard key={index} recommendation={rec} />
-              ))}
+              {recommendations.map((rec, index) => {
+                const itemId = rec.id || `${rec.title || rec.name}-${rec.type}`;
+                return (
+                  <RecommendationCard 
+                    key={index} 
+                    recommendation={rec} 
+                    onAddToList={addToList}
+                    isAdding={addingItems.has(itemId)}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Info Section */}
-        <div className="mt-12 bg-gray-900 border border-gray-800 rounded-lg p-6">
+        <div className="mt-12 bg-gradient-to-br from-gray-900 via-black to-purple-900/50 border border-gray-800/50 rounded-xl p-6 backdrop-blur-sm">
           <div className="flex items-start space-x-4">
-            <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
-              {recommendationType === 'smart-only' && <Brain className="w-4 h-4 text-gray-400" />}
-              {recommendationType === 'collaborative' && <Users className="w-4 h-4 text-gray-400" />}
-              {recommendationType === 'hybrid' && <Sparkles className="w-4 h-4 text-gray-400" />}
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center icon-gradient-bg">
+              {recommendationType === 'smart-only' && <Brain className="w-4 h-4 text-white" />}
+              {recommendationType === 'collaborative' && <Users className="w-4 h-4 text-white" />}
+              {recommendationType === 'hybrid' && <Sparkles className="w-4 h-4 text-white" />}
             </div>
             <div>
               <h3 className="text-lg font-medium text-white mb-2">
                 {getRecommendationTypeLabel()}
               </h3>
-              <div className="text-sm text-gray-400 space-y-1">
+              <div className="text-sm text-gray-300 space-y-1">
                 {recommendationType === 'hybrid' && (
                   <p>Akıllı analiz ve benzer kullanıcıların tercihlerini birleştirerek en iyi önerileri sunuyoruz.</p>
                 )}
@@ -229,7 +421,11 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = () => {
 };
 
 // Recommendation Card Component
-const RecommendationCard: React.FC<{ recommendation: any }> = ({ recommendation }) => {
+const RecommendationCard: React.FC<{ 
+  recommendation: any; 
+  onAddToList: (recommendation: any) => void;
+  isAdding: boolean;
+}> = ({ recommendation, onAddToList, isAdding }) => {
   const getTitle = () => {
     if (recommendation.title) return recommendation.title;
     if (recommendation.name) return recommendation.name;
@@ -249,46 +445,98 @@ const RecommendationCard: React.FC<{ recommendation: any }> = ({ recommendation 
     return parts.join(' • ');
   };
 
+  const isMovieOrTV = recommendation.type === 'MOVIE' || recommendation.type === 'TV_SHOW';
+  const posterUrl = recommendation.poster || recommendation.item?.poster;
+
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-gray-700 transition-colors">
+    <div className="bg-gradient-to-br from-gray-900 via-black to-purple-900/30 border border-gray-800/50 rounded-xl p-6 backdrop-blur-sm hover:border-purple-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:-translate-y-1">
       <div className="flex items-start space-x-4">
-        <div className="flex-1">
+        {/* Poster for movies/TV shows */}
+        {isMovieOrTV && posterUrl ? (
+          <div className="w-20 h-28 rounded-xl overflow-hidden flex-shrink-0 shadow-lg border border-gray-700/50">
+            <img
+              src={`https://image.tmdb.org/t/p/w200${posterUrl}`}
+              alt={getTitle()}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to gradient background
+                e.currentTarget.style.display = 'none';
+                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+            />
+            <div className="w-20 h-28 rounded-xl flex items-center justify-center icon-gradient-bg" style={{display: 'none'}}>
+              {recommendation.type === 'MOVIE' ? (
+                <Clapperboard className="w-8 h-8 text-white" />
+              ) : (
+                <Monitor className="w-8 h-8 text-white" />
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 icon-gradient-bg">
+            {recommendation.type === 'MUSIC' && <Headphones className="w-8 h-8 text-white" />}
+            {recommendation.type === 'RESTAURANT' && <MapPin className="w-8 h-8 text-white" />}
+            {!recommendation.type && <Sparkles className="w-8 h-8 text-white" />}
+          </div>
+        )}
+        
+        <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-2">
-            <h3 className="font-medium text-white line-clamp-2">
+            <h3 className="font-semibold text-white line-clamp-2 text-lg">
               {getTitle()}
             </h3>
             <div className="flex items-center space-x-2 ml-2">
               {recommendation.source === 'collaborative' && (
-                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-800 text-gray-300">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30">
                   <Users className="w-3 h-3 mr-1" />
                   Kullanıcı
+                </span>
+              )}
+              {isMovieOrTV && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  {recommendation.type === 'MOVIE' ? 'Film' : 'Dizi'}
                 </span>
               )}
             </div>
           </div>
           
           {getSubtitle() && (
-            <p className="text-sm text-gray-500 mb-3">{getSubtitle()}</p>
+            <p className="text-sm text-gray-300 mb-3">{getSubtitle()}</p>
           )}
           
-          <p className="text-sm text-gray-400 mb-4 line-clamp-2">
+          <p className="text-sm text-gray-400 mb-4 line-clamp-3">
             {recommendation.reason}
           </p>
           
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-800 text-gray-300">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30">
                 %{Math.round((recommendation.confidence || 0.5) * 100)} eşleşme
               </span>
               {recommendation.rating && (
                 <div className="flex items-center space-x-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                  <span className="text-sm text-gray-400">{recommendation.rating}</span>
+                  <span className="text-sm text-gray-300">{recommendation.rating}</span>
                 </div>
               )}
             </div>
-            <button className="text-sm text-gray-400 hover:text-white font-medium transition-colors">
-              Detay
+            <button 
+              onClick={() => onAddToList(recommendation)}
+              disabled={isAdding}
+              className="bg-gradient-to-r from-purple-600 to-black hover:from-purple-700 hover:to-gray-900 disabled:from-purple-600/50 disabled:to-black/50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 flex items-center space-x-2 disabled:cursor-not-allowed border border-purple-500/30 shadow-lg hover:shadow-purple-500/25"
+            >
+              {isAdding ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Ekleniyor...</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  <span>Listeme Ekle</span>
+                </>
+              )}
             </button>
           </div>
         </div>

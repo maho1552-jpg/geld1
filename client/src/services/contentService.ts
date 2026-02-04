@@ -9,11 +9,27 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
+  console.log('API Request:', config.method?.toUpperCase(), config.url, 'Token:', token ? 'Present' : 'Missing');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+// Response interceptor to log responses and errors
+api.interceptors.response.use(
+  (response) => {
+    console.log('=== API SUCCESS ===');
+    console.log('API Response:', response.status, response.config.url, response.data);
+    return response;
+  },
+  (error) => {
+    console.error('=== API ERROR ===');
+    console.error('API Error:', error.response?.status, error.config?.url, error.response?.data);
+    console.error('Full error:', error);
+    return Promise.reject(error);
+  }
+);
 
 export const contentService = {
   // Movies
@@ -68,6 +84,11 @@ export const contentService = {
 
   async getStats() {
     const response = await api.get('/content/stats');
+    return response.data;
+  },
+
+  async getUserContent(userId: string) {
+    const response = await api.get(`/content/user/${userId}`);
     return response.data;
   },
 

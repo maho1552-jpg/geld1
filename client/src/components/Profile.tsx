@@ -54,6 +54,8 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
   };
 
   useEffect(() => {
+    console.log('=== PROFILE REFRESH TRIGGERED ===');
+    console.log('refreshTrigger value:', refreshTrigger);
     fetchUserContent();
     fetchSocialStats();
   }, [refreshTrigger]); // refreshTrigger değiştiğinde verileri yenile
@@ -70,8 +72,10 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
 
   const fetchUserContent = async () => {
     try {
+      console.log('=== FETCHING USER CONTENT ===');
       setIsLoading(true);
       const data = await contentService.getMyContent();
+      console.log('Fetched user content:', data);
       
       // Calculate stats
       const allContent = [
@@ -236,55 +240,86 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
   );
 
   const renderContentList = (items: any[], type: string) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {items.map((item, itemIndex) => (
-        <div key={itemIndex} className="bg-gray-900/30 backdrop-blur-xl rounded-2xl p-4 border border-gray-800/50 hover:bg-gray-800/30 transition-all duration-300">
-          <div className="flex items-start space-x-3">
-            {item.poster && (
-              <img
-                src={item.poster}
-                alt={item.title || item.name}
-                className="w-16 h-20 rounded-lg object-cover bg-gray-800/30"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            )}
-            <div className="flex-1">
-              <h4 className="font-medium text-white text-sm">
-                {item.title || item.name}
-              </h4>
-              {item.artist && (
-                <p className="text-xs text-gray-400">{item.artist}</p>
-              )}
-              {item.director && (
-                <p className="text-xs text-gray-400">Yön: {item.director}</p>
-              )}
-              {item.cuisine && (
-                <p className="text-xs text-gray-400">{item.cuisine}</p>
-              )}
-              {item.location && (
-                <p className="text-xs text-gray-400">{item.location}</p>
-              )}
-              {item.year && (
-                <p className="text-xs text-gray-400">{item.year}</p>
-              )}
-              {item.rating && (
-                <div className="flex items-center mt-2">
-                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                  <span className="text-sm text-gray-300 ml-1">{item.rating}/5</span>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {items.map((item, itemIndex) => {
+        const isMovieOrTV = type === 'film' || type === 'dizi';
+        const posterUrl = item.poster;
+        
+        return (
+          <div key={itemIndex} className="bg-gradient-to-br from-gray-900 via-black to-purple-900/30 border border-gray-800/50 rounded-xl p-6 backdrop-blur-sm hover:border-purple-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 hover:-translate-y-1">
+            <div className="flex items-start space-x-4">
+              {/* Poster for movies/TV shows */}
+              {isMovieOrTV && posterUrl ? (
+                <div className="w-16 h-24 rounded-xl overflow-hidden flex-shrink-0 shadow-lg border border-gray-700/50">
+                  <img
+                    src={`https://image.tmdb.org/t/p/w200${posterUrl}`}
+                    alt={item.title || item.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to gradient background
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-16 h-24 rounded-xl flex items-center justify-center icon-gradient-bg" style={{display: 'none'}}>
+                    {type === 'film' ? (
+                      <Clapperboard className="w-6 h-6 text-white" />
+                    ) : (
+                      <Monitor className="w-6 h-6 text-white" />
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 icon-gradient-bg">
+                  {type === 'müzik' && <Headphones className="w-6 h-6 text-white" />}
+                  {type === 'mekan' && <MapPin className="w-6 h-6 text-white" />}
                 </div>
               )}
-              {item.review && (
-                <p className="text-xs text-gray-400 mt-2 line-clamp-2">{item.review}</p>
-              )}
+              
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-white text-sm truncate">
+                  {item.title || item.name}
+                </h4>
+                {item.artist && (
+                  <p className="text-xs text-gray-300 mt-1">{item.artist}</p>
+                )}
+                {item.director && (
+                  <p className="text-xs text-gray-300 mt-1">Yön: {item.director}</p>
+                )}
+                {item.cuisine && (
+                  <p className="text-xs text-gray-300 mt-1">{item.cuisine}</p>
+                )}
+                {item.location && (
+                  <p className="text-xs text-gray-300 mt-1">{item.location}</p>
+                )}
+                {item.year && (
+                  <p className="text-xs text-gray-400 mt-1">{item.year}</p>
+                )}
+                {item.rating && (
+                  <div className="flex items-center mt-2">
+                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                    <span className="text-sm text-gray-300 ml-1">{item.rating}/5</span>
+                  </div>
+                )}
+                {item.review && (
+                  <p className="text-xs text-gray-400 mt-2 line-clamp-2">{item.review}</p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       {items.length === 0 && (
-        <div className="col-span-full text-center py-8">
-          <p className="text-gray-400">Henüz {type} eklenmemiş</p>
+        <div className="col-span-full text-center py-12">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 icon-gradient-bg">
+            {type === 'film' && <Clapperboard className="w-8 h-8 text-white" />}
+            {type === 'dizi' && <Monitor className="w-8 h-8 text-white" />}
+            {type === 'müzik' && <Headphones className="w-8 h-8 text-white" />}
+            {type === 'mekan' && <MapPin className="w-8 h-8 text-white" />}
+          </div>
+          <p className="text-gray-300 text-lg font-medium">Henüz {type} eklenmemiş</p>
+          <p className="text-gray-400 text-sm mt-1">İlk {type}ini ekleyerek başla</p>
         </div>
       )}
     </div>
@@ -305,10 +340,10 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
     <div className="min-h-screen bg-black">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Profile Header */}
-        <div className="bg-gray-900/30 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-6 mb-8">
+        <div className="bg-gradient-to-br from-black via-gray-900 to-purple-900 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-8 mb-8">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-6">
-              <div className="w-20 h-20 bg-gray-800/30 rounded-full flex items-center justify-center overflow-hidden border border-gray-700/50">
+              <div className="w-20 h-20 bg-gradient-to-br from-gray-800 to-purple-900/50 rounded-full flex items-center justify-center overflow-hidden border border-gray-700/50 shadow-lg">
                 {currentUser?.avatar ? (
                   <img
                     src={currentUser.avatar}
@@ -319,36 +354,36 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
                     }}
                   />
                 ) : (
-                  <User className="w-10 h-10 text-gray-400" />
+                  <User className="w-10 h-10 text-gray-300" />
                 )}
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl font-semibold text-white">
+                <h1 className="text-3xl font-bold text-white">
                   {currentUser?.name || currentUser?.username}
                 </h1>
-                <p className="text-gray-400">@{currentUser?.username}</p>
+                <p className="text-gray-300">@{currentUser?.username}</p>
                 
                 {currentUser?.bio && (
                   <p className="text-gray-300 mt-2 max-w-md">{currentUser.bio}</p>
                 )}
 
                 {/* Profile Info */}
-                <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-400">
+                <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-300">
                   <div className="flex items-center space-x-1">
-                    <Mail className="w-4 h-4" />
+                    <Mail className="w-4 h-4 icon-gradient" />
                     <span>{currentUser?.email}</span>
                   </div>
                   
                   {currentUser?.age && currentUser?.showAge && (
                     <div className="flex items-center space-x-1">
-                      <Calendar className="w-4 h-4" />
+                      <Calendar className="w-4 h-4 icon-gradient" />
                       <span>{currentUser.age} yaşında</span>
                     </div>
                   )}
                   
                   {(currentUser?.city || currentUser?.country) && currentUser?.showLocation && (
                     <div className="flex items-center space-x-1">
-                      <MapPin className="w-4 h-4" />
+                      <MapPin className="w-4 h-4 icon-gradient" />
                       <span>
                         {[currentUser?.city, currentUser?.country].filter(Boolean).join(', ')}
                       </span>
@@ -357,7 +392,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
                   
                   {(currentUser?.work || currentUser?.jobTitle) && currentUser?.showWork && (
                     <div className="flex items-center space-x-1">
-                      <Briefcase className="w-4 h-4" />
+                      <Briefcase className="w-4 h-4 icon-gradient" />
                       <span>
                         {[currentUser?.jobTitle, currentUser?.work].filter(Boolean).join(' @ ')}
                       </span>
@@ -366,19 +401,19 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
                   
                   {currentUser?.school && (
                     <div className="flex items-center space-x-1">
-                      <GraduationCap className="w-4 h-4" />
+                      <GraduationCap className="w-4 h-4 icon-gradient" />
                       <span>{currentUser.school}</span>
                     </div>
                   )}
                   
                   {currentUser?.website && (
                     <div className="flex items-center space-x-1">
-                      <Globe className="w-4 h-4" />
+                      <Globe className="w-4 h-4 icon-gradient" />
                       <a 
                         href={currentUser.website} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-700 transition-colors"
+                        className="text-purple-400 hover:text-purple-300 transition-colors"
                       >
                         Website
                       </a>
@@ -392,7 +427,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
                     onClick={onOpenFriends}
                     className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
                   >
-                    <Users className="w-4 h-4" />
+                    <Users className="w-4 h-4 icon-gradient" />
                     <span className="text-sm">
                       <span className="font-medium">{followersCount}</span> takipçi
                     </span>
@@ -402,7 +437,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
                     onClick={onOpenFriends}
                     className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
                   >
-                    <UserPlus className="w-4 h-4" />
+                    <UserPlus className="w-4 h-4 icon-gradient" />
                     <span className="text-sm">
                       <span className="font-medium">{followingCount}</span> takip
                     </span>
@@ -412,8 +447,8 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
                 {/* Privacy Indicator */}
                 {currentUser?.isPrivate && (
                   <div className="flex items-center space-x-1 mt-2">
-                    <EyeOff className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-500">Özel Profil</span>
+                    <EyeOff className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-400">Özel Profil</span>
                   </div>
                 )}
               </div>
@@ -421,7 +456,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
             
             <button
               onClick={() => setEditModalOpen(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors"
+              className="bg-gradient-to-r from-purple-600 to-black text-white px-6 py-3 rounded-xl flex items-center space-x-2 hover:from-purple-700 hover:to-gray-900 transition-all duration-300 border border-purple-500/30 shadow-lg hover:shadow-purple-500/25"
             >
               <Edit3 size={16} />
               <span>Düzenle</span>
@@ -430,7 +465,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
         </div>
 
         {/* Tabs */}
-        <div className="bg-gray-900/30 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-2 mb-8">
+        <div className="bg-gradient-to-br from-gray-900 via-black to-purple-900/50 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-2 mb-8">
           <div className="flex space-x-1">
             {[
               { id: 'overview', label: 'Genel Bakış', icon: BarChart3 },
@@ -442,13 +477,13 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl transition-colors ${
+                className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl transition-all duration-300 ${
                   activeTab === tab.id
-                    ? 'bg-gray-800/50 text-white border border-gray-700/50'
-                    : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/20'
+                    ? 'bg-gradient-to-r from-purple-600 to-black text-white border border-purple-500/30 shadow-lg'
+                    : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/30'
                 }`}
               >
-                <tab.icon size={18} />
+                <tab.icon size={18} className={activeTab === tab.id ? 'text-white' : 'icon-gradient'} />
                 <span className="font-medium">{tab.label}</span>
               </button>
             ))}
@@ -483,13 +518,13 @@ const StatCard: React.FC<{
   icon: React.ReactNode;
   color: string;
 }> = ({ title, value, icon }) => (
-  <div className="bg-gray-900/30 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-4 hover:bg-gray-800/30 transition-colors">
+  <div className="bg-gradient-to-br from-gray-900 via-black to-purple-900/30 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-6 hover:border-purple-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-gray-400 text-sm font-medium">{title}</p>
+        <p className="text-gray-300 text-sm font-medium">{title}</p>
         <p className="text-2xl font-semibold text-white mt-1">{value}</p>
       </div>
-      <div className="text-gray-400">
+      <div className="text-gray-300">
         {icon}
       </div>
     </div>

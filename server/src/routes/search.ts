@@ -4,6 +4,45 @@ import { authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
 
+// iTunes Search API is now used for music search instead of Spotify
+// No authentication required for iTunes API
+
+// iTunes Search API ile müzik arama (öncelik)
+async function searchiTunesMusic(query: string): Promise<any[]> {
+  try {
+    const response = await axios.get('https://itunes.apple.com/search', {
+      params: {
+        term: query,
+        media: 'music',
+        entity: 'song',
+        limit: 8,
+        country: 'TR'
+      },
+      timeout: 5000
+    });
+
+    const results = response.data.results;
+    
+    return results.map((track: any) => ({
+      id: track.trackId,
+      title: track.trackName,
+      artist: track.artistName,
+      album: track.collectionName,
+      year: track.releaseDate ? new Date(track.releaseDate).getFullYear() : null,
+      genre: track.primaryGenreName || 'Pop',
+      duration: track.trackTimeMillis ? Math.floor(track.trackTimeMillis / 1000) : null,
+      price: track.trackPrice,
+      preview_url: track.previewUrl,
+      itunes_url: track.trackViewUrl,
+      image: track.artworkUrl100 ? track.artworkUrl100.replace('100x100', '300x300') : null,
+      itunesId: track.trackId
+    }));
+  } catch (error) {
+    console.error('iTunes Search API error:', error);
+    return [];
+  }
+}
+
 // TMDB genre mapping
 const MOVIE_GENRES: { [key: number]: string } = {
   28: 'Aksiyon',
@@ -185,7 +224,7 @@ router.get('/tv-shows', authMiddleware, async (req, res) => {
   }
 });
 
-// Müzik arama - Last.fm API ile
+// Müzik arama - iTunes API ile (öncelik) ve Last.fm fallback
 router.get('/music', authMiddleware, async (req, res) => {
   try {
     const { query } = req.query;
@@ -195,9 +234,18 @@ router.get('/music', authMiddleware, async (req, res) => {
       return res.json([]);
     }
 
-    const LASTFM_API_KEY = process.env.LASTFM_API_KEY;
+    // Önce iTunes Search API'yi dene
+    try {
+      const itunesResults = await searchiTunesMusic(searchQuery);
+      if (itunesResults.length > 0) {
+        return res.json(itunesResults);
+      }
+    } catch (error) {
+      console.error('iTunes API error:', error);
+    }
 
-    // Önce Last.fm API'yi dene
+    // iTunes başarısız olursa Last.fm'i dene
+    const LASTFM_API_KEY = process.env.LASTFM_API_KEY;
     if (LASTFM_API_KEY && LASTFM_API_KEY !== 'demo_key') {
       try {
         console.log('Last.fm API ile müzik arama yapılıyor:', searchQuery);

@@ -119,7 +119,7 @@ model TvShow {
 model Music {
   id          String   @id @default(cuid())
   userId      String
-  spotifyId   String?
+  itunesId    String?
   title       String
   artist      String
   album       String?

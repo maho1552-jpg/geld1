@@ -201,7 +201,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
         // Add selected item data if available
         ...(selectedItem && {
           tmdbId: selectedItem.tmdbId,
-          spotifyId: selectedItem.spotifyId,
+          itunesId: selectedItem.itunesId,
           googlePlaceId: selectedItem.googlePlaceId,
           poster: selectedItem.poster,
           cover: selectedItem.cover,
@@ -344,7 +344,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                           {type === 'movie' && `${item.year || ''} ${item.genre && Array.isArray(item.genre) ? '• ' + item.genre.slice(0, 2).join(', ') : ''}`}
                           {type === 'tvshow' && `${item.year || ''} ${item.seasons ? '• ' + item.seasons + ' sezon' : ''}`}
                           {type === 'music' && `${item.artist || ''} ${item.album ? '• ' + item.album : ''} ${item.year ? '• ' + item.year : ''}`}
-                          {type === 'restaurant' && `${item.cuisine || ''} ${item.location ? '• ' + item.location : ''} ${item.rating ? '• ⭐ ' + item.rating : ''}`}
+                          {type === 'restaurant' && `${item.cuisine || ''} ${item.location ? '• ' + item.location : ''} ${item.rating ? '• ' + item.rating + '/5' : ''}`}
                         </p>
                       </div>
                     </div>

@@ -157,7 +157,7 @@ npm run db:migrate   # Migration oluşturma
 - [ ] Bildirim sistemi
 
 ### Orta Vadeli
-- [ ] External API entegrasyonları (TMDB, Spotify, Google Places)
+- [x] External API entegrasyonları (TMDB, iTunes, Google Places)
 - [ ] Gelişmiş AI algoritmaları
 - [ ] Grup oluşturma ve etkinlik planlama
 - [ ] İstatistik dashboard'u

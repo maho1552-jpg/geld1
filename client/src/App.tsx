@@ -5,9 +5,11 @@ import { RegisterForm } from './components/Auth/RegisterForm';
 import { Dashboard } from './components/Dashboard';
 import { Profile } from './components/Profile';
 import { AIRecommendations } from './components/AIRecommendations';
+import { Friends } from './components/Friends';
 import { Navigation } from './components/Navigation';
 import { AddContentModal } from './components/AddContentModal';
 import { FriendsModal } from './components/FriendsModal';
+import { UserProfileModal } from './components/UserProfileModal';
 import { authService } from './services/authService';
 import { contentService } from './services/contentService';
 
@@ -25,7 +27,7 @@ function App() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [authError, setAuthError] = useState<string>('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'profile' | 'recommendations'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'profile' | 'recommendations' | 'friends'>('dashboard');
   const [dashboardRefresh, setDashboardRefresh] = useState(0); // Dashboard'ı yenilemek için
   
   // Modal states
@@ -33,6 +35,8 @@ function App() {
   const [addModalType, setAddModalType] = useState<'movie' | 'tvshow' | 'music' | 'restaurant'>('movie');
   const [friendsModalOpen, setFriendsModalOpen] = useState(false);
   const [friendsModalTab, setFriendsModalTab] = useState<'search' | 'suggestions' | 'following' | 'followers'>('search');
+  const [userProfileModalOpen, setUserProfileModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuthStatus();
@@ -130,8 +134,13 @@ function App() {
     setFriendsModalOpen(true);
   };
 
-  const handleNavigate = (page: 'dashboard' | 'profile' | 'recommendations') => {
+  const handleNavigate = (page: 'dashboard' | 'profile' | 'recommendations' | 'friends') => {
     setCurrentPage(page);
+  };
+
+  const handleUserProfile = (userId: string) => {
+    setSelectedUserId(userId);
+    setUserProfileModalOpen(true);
   };
 
   if (isLoading) {
@@ -195,9 +204,24 @@ function App() {
 
         {/* Main Content */}
         <div className="pt-0">
-          {currentPage === 'dashboard' && <Dashboard user={user} onAddContent={openAddModal} onNavigate={handleNavigate} refreshTrigger={dashboardRefresh} />}
+          {currentPage === 'dashboard' && <Dashboard user={user} onAddContent={openAddModal} onNavigate={handleNavigate} refreshTrigger={dashboardRefresh} onContentAdded={() => {
+            console.log('=== APP: Content added callback triggered ===');
+            console.log('Current dashboardRefresh:', dashboardRefresh);
+            setDashboardRefresh(prev => {
+              console.log('Setting dashboardRefresh from', prev, 'to', prev + 1);
+              return prev + 1;
+            });
+          }} />}
           {currentPage === 'profile' && <Profile user={user} onUserUpdate={setUser} refreshTrigger={dashboardRefresh} onOpenFriends={() => openFriendsModal()} />}
-          {currentPage === 'recommendations' && <AIRecommendations user={user} />}
+          {currentPage === 'recommendations' && <AIRecommendations user={user} onContentAdded={() => {
+            console.log('=== APP: Content added callback triggered from AIRecommendations ===');
+            console.log('Current dashboardRefresh:', dashboardRefresh);
+            setDashboardRefresh(prev => {
+              console.log('Setting dashboardRefresh from', prev, 'to', prev + 1);
+              return prev + 1;
+            });
+          }} />}
+          {currentPage === 'friends' && <Friends user={user} onAddFriend={() => openFriendsModal()} onUserProfile={handleUserProfile} />}
         </div>
 
         {/* Add Content Modal */}
@@ -214,6 +238,18 @@ function App() {
           onClose={() => setFriendsModalOpen(false)}
           initialTab={friendsModalTab}
         />
+
+        {/* User Profile Modal */}
+        {selectedUserId && (
+          <UserProfileModal
+            isOpen={userProfileModalOpen}
+            onClose={() => {
+              setUserProfileModalOpen(false);
+              setSelectedUserId(null);
+            }}
+            userId={selectedUserId}
+          />
+        )}
       </div>
     </Router>
   );
