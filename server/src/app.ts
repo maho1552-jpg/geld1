@@ -14,8 +14,8 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: '*', // Geçici olarak tüm origin'lere izin ver
-  credentials: false
+  origin: process.env.FRONTEND_URL || 'https://geld1-frontend.onrender.com',
+  credentials: true
 }));
 app.use(express.json());
 

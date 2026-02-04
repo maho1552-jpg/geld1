@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, User, Plus, LogOut, Sparkles, Menu, X, UserPlus } from 'lucide-react';
+import { User, LogOut, Sparkles, Menu, X, UserPlus } from 'lucide-react';
 
 interface NavigationProps {
   currentPage: 'dashboard' | 'profile' | 'recommendations' | 'friends';
@@ -13,8 +13,6 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({
   currentPage,
   onNavigate,
-  onAddContent,
-  onAddFriend,
   onLogout,
   user
 }) => {

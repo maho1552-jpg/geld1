@@ -9,7 +9,7 @@ interface FriendsProps {
   onUserProfile: (userId: string) => void;
 }
 
-export const Friends: React.FC<FriendsProps> = ({ user, onAddFriend, onUserProfile }) => {
+export const Friends: React.FC<FriendsProps> = ({ onAddFriend, onUserProfile }) => {
   const [following, setFollowing] = useState<any[]>([]);
   const [friendsActivity, setFriendsActivity] = useState<any[]>([]);
   const [friendsStats, setFriendsStats] = useState<{[key: string]: any}>({});

@@ -91,7 +91,7 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
       return result;
     } catch (error) {
       console.error(`Error fetching ${type} recommendations:`, error);
-      console.error('Full error details:', error.response?.data || error.message);
+      console.error('Full error details:', (error as any).response?.data || (error as any).message);
       return [];
     }
   };
