@@ -26,7 +26,7 @@ app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/friends', friendsRoutes);
 
-// Health check
+// Health check - Updated for production deployment
 app.get('/api/health', (req, res) => {
   try {
     res.json({ 
