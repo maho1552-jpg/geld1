@@ -1,4 +1,13 @@
 {
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
@@ -15,5 +24,8 @@
         { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" }
       ]
     }
-  ]
+  ],
+  "env": {
+    "VITE_API_URL": "https://geld1-1.onrender.com/api"
+  }
 }
