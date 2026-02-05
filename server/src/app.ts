@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import authRoutes from './routes/auth';
 import contentRoutes from './routes/content';
 import recommendationRoutes from './routes/recommendations';
@@ -19,7 +20,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Routes
+// Serve static files from client build
+app.use(express.static(path.join(__dirname, '../../client/dist')));
+
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/recommendations', recommendationRoutes);
@@ -73,6 +77,11 @@ app.get('/api/db-test', async (req, res) => {
       error: error.toString()
     });
   }
+});
+
+// Serve React app for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
 });
 
 app.listen(PORT, () => {
