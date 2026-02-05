@@ -1,5 +1,5 @@
 [phases.build]
-cmds = ["npm install", "npm run build", "npx prisma generate"]
+cmds = ["npm install", "npx prisma generate", "npm run build"]
 
 [phases.deploy]
 cmd = "npm start"
