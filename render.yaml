@@ -1,10 +1,21 @@
 services:
-  # Backend Service
+  # Frontend Service
+  - type: web
+    name: geld-frontend
+    env: static
+    plan: starter
+    buildCommand: npm install && cd client && npm install && npm run build
+    staticPublishPath: ./client/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://geld-backend.up.railway.app/api
+
+  # Backend Service  
   - type: web
     name: geld-backend
     env: node
     plan: starter
-    buildCommand: cd server && npm install && npx prisma generate && npm run build
+    buildCommand: npm install && cd server && npm install && npx prisma generate && npm run build
     startCommand: cd server && npx prisma migrate deploy && npm start
     envVars:
       - key: NODE_ENV
@@ -27,17 +38,6 @@ services:
         value: AIzaSyDsmiyvotuJbEHVbjjELwQrJdexMd91zAc
       - key: FOURSQUARE_API_KEY
         value: fsq3YckbXHBJjWaPM0vuXzPZp8yyYJhKXdcDaLUvC6ALnns=
-
-  # Frontend Service
-  - type: web
-    name: geld-frontend
-    env: static
-    plan: starter
-    buildCommand: cd client && npm install && npm run build
-    staticPublishPath: ./client/dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://geld-backend.up.railway.app/api
 
 databases:
   - name: geld-db
