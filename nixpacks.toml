@@ -18,3 +18,4 @@ cmd = 'cd server && npm start'
 
 [variables]
 NODE_ENV = 'production'
+PORT = '5000'
