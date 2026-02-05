@@ -9,3 +9,9 @@
 
 [build.environment]
   VITE_API_URL = "https://geld1-1.onrender.com/api"
+
+[context.production.environment]
+  VITE_API_URL = "https://geld1-1.onrender.com/api"
+
+[context.deploy-preview.environment]
+  VITE_API_URL = "https://geld1-1.onrender.com/api"

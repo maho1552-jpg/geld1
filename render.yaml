@@ -3,9 +3,9 @@ services:
   - type: web
     name: geld-backend
     env: node
-    plan: free
+    plan: starter
     buildCommand: cd server && npm install && npx prisma generate && npm run build
-    startCommand: cd server && npm start
+    startCommand: cd server && npx prisma migrate deploy && npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -16,7 +16,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        value: https://geld1-frontend.onrender.com
+        value: https://geld-frontend.up.railway.app
       - key: TMDB_API_KEY
         value: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNDM3MzI3Y2Y5ZDI0YmNmMWJhODNlNTA1ZjhlMGEwNyIsIm5iZiI6MTc2OTYyMjYzNy4xOTUwMDAyLCJzdWIiOiI2OTdhNGM2ZDExM2YwNDkzYzExMmY2Y2EiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.cGdshBSCvpMofvGRBL3-GsEctxy2Gx_Ju6ds0BE5Mqo
       - key: GEMINI_API_KEY
@@ -32,13 +32,13 @@ services:
   - type: web
     name: geld-frontend
     env: static
-    plan: free
+    plan: starter
     buildCommand: cd client && npm install && npm run build
     staticPublishPath: ./client/dist
     envVars:
       - key: VITE_API_URL
-        value: https://geld1-1.onrender.com/api
+        value: https://geld-backend.up.railway.app/api
 
 databases:
   - name: geld-db
-    plan: free
+    plan: starter
