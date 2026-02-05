@@ -7,7 +7,25 @@
 
 ## 🎯 Önerilen Deployment Stratejisi
 
-### Seçenek 1: Vercel (En Hızlı) ⭐
+### Seçenek 1: Railway (En İyi) ⭐
+**Full-Stack Deployment:**
+1. [railway.app](https://railway.app) → GitHub ile giriş
+2. "New Project" → "Deploy from GitHub repo"
+3. `geld1` repo seç → Deploy
+4. PostgreSQL database ekle:
+   - "Add Service" → "Database" → "PostgreSQL"
+5. Environment Variables (otomatik ayarlanacak):
+   ```
+   DATABASE_URL = postgresql://...
+   JWT_SECRET = your-secret-key
+   GEMINI_API_KEY = your-gemini-key
+   TMDB_API_KEY = your-tmdb-key
+   ```
+6. Deploy tamamlandığında URL'ler:
+   - Backend: https://your-app.railway.app
+   - Frontend: https://your-app.railway.app (aynı domain)
+
+### Seçenek 2: Vercel (Sadece Frontend)
 **Frontend için:**
 1. [vercel.com](https://vercel.com) → GitHub ile giriş
 2. "New Project" → `geld1` repo seç
@@ -22,7 +40,7 @@
    ```
 5. Deploy!
 
-### Seçenek 2: Netlify (Kolay)
+### Seçenek 3: Netlify (Sadece Frontend)
 **Frontend için:**
 1. [netlify.com](https://netlify.com) → GitHub ile giriş
 2. "New site from Git" → `geld1` repo seç
@@ -34,15 +52,6 @@
    VITE_API_URL = https://geld1-1.onrender.com/api
    ```
 5. Deploy!
-
-### Seçenek 3: Railway (Full-Stack)
-**Backend + Frontend + Database:**
-1. [railway.app](https://railway.app) → GitHub ile giriş
-2. "New Project" → "Deploy from GitHub repo"
-3. `geld1` repo seç
-4. Otomatik detect edecek
-5. PostgreSQL database ekle
-6. Environment variables otomatik ayarlanacak
 
 ## 🔧 Mevcut Konfigürasyonlar
 
@@ -71,18 +80,19 @@
 
 ## 📱 Hızlı Deployment
 
-**En hızlı çözüm (5 dakika):**
+**En iyi çözüm (Railway - 10 dakika):**
+1. Railway → Full-stack deploy
+2. PostgreSQL database otomatik
+3. Tüm özellikler çalışacak
+4. Tek domain, kolay yönetim
+
+**Hızlı çözüm (Vercel - 5 dakika):**
 1. Vercel → Frontend deploy
 2. Render backend düzelene kadar bekle
-3. Tüm özellikler çalışacak
-
-**Tam çözüm (15 dakika):**
-1. Railway → Full-stack deploy
-2. Yeni database + backend + frontend
-3. Tüm sorunlar çözülecek
+3. Çoğu özellik çalışacak
 
 ## 🎉 Sonuç
 
-Kod tamamen hazır! Sadece deployment platformu seçmen gerekiyor.
+Kod tamamen hazır! Railway ile en sorunsuz deployment olacak.
 
-**Önerim**: Vercel ile başla, çok hızlı ve kolay.
+**Önerim**: Railway ile başla, hem backend hem frontend tek seferde deploy olur.
