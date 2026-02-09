@@ -1,33 +1,17 @@
 services:
-  # Frontend Service
+  # Web Service (Backend + Frontend)
   - type: web
-    name: geld-frontend
-    env: static
-    plan: starter
-    buildCommand: npm install && cd client && npm install && npm run build
-    staticPublishPath: ./client/dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://geld-backend.up.railway.app/api
-
-  # Backend Service  
-  - type: web
-    name: geld-backend
+    name: geld
     env: node
-    plan: starter
-    buildCommand: npm install && cd server && npm install && npx prisma generate && npm run build
-    startCommand: cd server && npx prisma migrate deploy && npm start
+    region: oregon
+    plan: free
+    buildCommand: cd client && npm install && npm run build && cd ../server && npm install && npm run build
+    startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: geld-db
-          property: connectionString
       - key: JWT_SECRET
-        generateValue: true
-      - key: FRONTEND_URL
-        value: https://geld-frontend.up.railway.app
+        value: super-secret-jwt-key-for-social-tracker-app-2024
       - key: TMDB_API_KEY
         value: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNDM3MzI3Y2Y5ZDI0YmNmMWJhODNlNTA1ZjhlMGEwNyIsIm5iZiI6MTc2OTYyMjYzNy4xOTUwMDAyLCJzdWIiOiI2OTdhNGM2ZDExM2YwNDkzYzExMmY2Y2EiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.cGdshBSCvpMofvGRBL3-GsEctxy2Gx_Ju6ds0BE5Mqo
       - key: GEMINI_API_KEY
@@ -38,7 +22,14 @@ services:
         value: AIzaSyDsmiyvotuJbEHVbjjELwQrJdexMd91zAc
       - key: FOURSQUARE_API_KEY
         value: fsq3YckbXHBJjWaPM0vuXzPZp8yyYJhKXdcDaLUvC6ALnns=
+      - key: DATABASE_URL
+        fromDatabase:
+          name: geld-db
+          property: connectionString
 
 databases:
   - name: geld-db
-    plan: starter
+    databaseName: geld
+    user: geld
+    plan: free
+    region: oregon
