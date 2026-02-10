@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Clapperboard, Monitor, Headphones, MapPin, Star, Calendar, TrendingUp, BarChart3, PieChart, Activity, Edit3, Mail, Globe, GraduationCap, Briefcase, EyeOff, Users, UserPlus } from 'lucide-react';
+import { User, Clapperboard, Monitor, Headphones, MapPin, Star, Calendar, TrendingUp, BarChart3, PieChart, Activity, Edit3, Mail, Globe, GraduationCap, Briefcase, EyeOff, Users, UserPlus, Sparkles } from 'lucide-react';
 import { contentService } from '../services/contentService';
 import { friendsService } from '../services/friendsService';
 import { EditProfileModal } from './EditProfileModal';
+import { TasteCard } from './TasteCard';
 
 interface ProfileProps {
   user: any;
@@ -36,6 +37,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
   });
   const [isLoading, setIsLoading] = useState(true);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [tasteCardOpen, setTasteCardOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(user);
   
   // Social stats
@@ -454,13 +456,23 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
               </div>
             </div>
             
-            <button
-              onClick={() => setEditModalOpen(true)}
-              className="bg-gradient-to-r from-purple-600 to-black text-white px-6 py-3 rounded-xl flex items-center space-x-2 hover:from-purple-700 hover:to-gray-900 transition-all duration-300 border border-purple-500/30 shadow-lg hover:shadow-purple-500/25"
-            >
-              <Edit3 size={16} />
-              <span>Düzenle</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setTasteCardOpen(true)}
+                className="bg-gradient-to-r from-pink-600 to-purple-600 text-white px-6 py-3 rounded-xl flex items-center space-x-2 hover:from-pink-700 hover:to-purple-700 transition-all duration-300 border border-pink-500/30 shadow-lg hover:shadow-pink-500/25"
+              >
+                <Sparkles size={16} />
+                <span>Zevk Kartı</span>
+              </button>
+              
+              <button
+                onClick={() => setEditModalOpen(true)}
+                className="bg-gradient-to-r from-purple-600 to-black text-white px-6 py-3 rounded-xl flex items-center space-x-2 hover:from-purple-700 hover:to-gray-900 transition-all duration-300 border border-purple-500/30 shadow-lg hover:shadow-purple-500/25"
+              >
+                <Edit3 size={16} />
+                <span>Düzenle</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -506,6 +518,14 @@ export const Profile: React.FC<ProfileProps> = ({ user, onUserUpdate, refreshTri
           user={currentUser}
           onUpdate={handleUserUpdate}
         />
+        
+        {/* Taste Card Modal */}
+        {tasteCardOpen && (
+          <TasteCard
+            user={currentUser}
+            onClose={() => setTasteCardOpen(false)}
+          />
+        )}
       </div>
     </div>
   );
