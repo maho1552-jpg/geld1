@@ -136,15 +136,6 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
   };
 
   const addToList = async (recommendation: any) => {
-      return result;
-    } catch (error) {
-      console.error(`Error fetching ${type} recommendations:`, error);
-      console.error('Full error details:', (error as any).response?.data || (error as any).message);
-      return [];
-    }
-  };
-
-  const addToList = async (recommendation: any) => {
     const itemId = recommendation.id || `${recommendation.title || recommendation.name}-${recommendation.type}`;
     
     console.log('=== ADDING RECOMMENDATION START ===');
