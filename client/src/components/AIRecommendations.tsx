@@ -135,29 +135,7 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
     }
   };
 
-  const getRecommendationsByType = async (type: 'MOVIE' | 'TV_SHOW' | 'MUSIC' | 'RESTAURANT') => {
-    try {
-      console.log('=== FETCHING RECOMMENDATIONS ===');
-      console.log('Recommendation type filter:', recommendationType);
-      console.log('Content type:', type);
-      
-      let result;
-      switch (recommendationType) {
-        case 'smart-only':
-          console.log('Calling getAIOnlySuggestions');
-          result = await recommendationService.getAIOnlySuggestions(type);
-          break;
-        case 'collaborative':
-          console.log('Calling getCollaborativeSuggestions');
-          result = await recommendationService.getCollaborativeSuggestions(type);
-          break;
-        default:
-          console.log('Calling getAISuggestions (hybrid)');
-          result = await recommendationService.getAISuggestions(type);
-          break;
-      }
-      
-      console.log('API result:', result);
+  const addToList = async (recommendation: any) => {
       return result;
     } catch (error) {
       console.error(`Error fetching ${type} recommendations:`, error);
