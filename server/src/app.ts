@@ -15,13 +15,15 @@ const PORT: number = parseInt(process.env.PORT || '5000', 10);
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://geld1-frontend.onrender.com',
+  origin: process.env.FRONTEND_URL || '*',
   credentials: true
 }));
 app.use(express.json());
 
 // Serve static files from client build
-app.use(express.static(path.join(__dirname, '../../client/dist')));
+const clientDistPath = path.join(__dirname, '../../client/dist');
+console.log('Serving static files from:', clientDistPath);
+app.use(express.static(clientDistPath));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -81,7 +83,14 @@ app.get('/api/db-test', async (req, res) => {
 
 // Serve React app for all non-API routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+  const indexPath = path.join(__dirname, '../../client/dist/index.html');
+  console.log('Serving index.html from:', indexPath);
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error serving index.html:', err);
+      res.status(500).send('Error loading application');
+    }
+  });
 });
 
 const server = app.listen(PORT, () => {
