@@ -9,8 +9,8 @@ interface AIRecommendationsProps {
 }
 
 export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentAdded }) => {
-  const [activeTab, setActiveTab] = useState<'all' | 'movies' | 'tvshows' | 'music' | 'restaurants' | 'popular'>('all');
-  const [recommendationType, setRecommendationType] = useState<'hybrid' | 'smart-only' | 'collaborative'>('hybrid');
+  const [activeTab, setActiveTab] = useState<'all' | 'movies' | 'tvshows' | 'music' | 'restaurants'>('all');
+  const [recommendationType, setRecommendationType] = useState<'hybrid' | 'smart-only' | 'collaborative' | 'popular'>('hybrid');
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -29,14 +29,17 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
     try {
       let allRecs: any[] = [];
 
-      // Popüler sekmesi için TMDB'den popüler içerikleri getir
-      if (activeTab === 'popular') {
-        const popularMovies = await fetchPopularFromTMDB('movie');
-        const popularTV = await fetchPopularFromTMDB('tv');
-        allRecs = [
-          ...popularMovies.map((rec: any) => ({ ...rec, category: 'movie' })),
-          ...popularTV.map((rec: any) => ({ ...rec, category: 'tvshow' }))
-        ];
+      // Popüler içerikler için TMDB'den çek
+      if (recommendationType === 'popular') {
+        if (activeTab === 'all' || activeTab === 'movies') {
+          const popularMovies = await fetchPopularFromTMDB('movie');
+          allRecs.push(...popularMovies.map((rec: any) => ({ ...rec, category: 'movie' })));
+        }
+        if (activeTab === 'all' || activeTab === 'tvshows') {
+          const popularTV = await fetchPopularFromTMDB('tv');
+          allRecs.push(...popularTV.map((rec: any) => ({ ...rec, category: 'tvshow' })));
+        }
+        // Müzik ve restoran için popüler içerik yok, boş bırak
       } else if (activeTab === 'all') {
         const [movieRecs, tvRecs, musicRecs, restaurantRecs] = await Promise.all([
           getRecommendationsByType('MOVIE'),
@@ -325,6 +328,8 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
         return 'Akıllı Öneriler';
       case 'collaborative':
         return 'Benzer Kullanıcılar';
+      case 'popular':
+        return 'Popüler İçerikler';
       default:
         return 'Hibrit Öneriler';
     }
@@ -341,7 +346,6 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
     { id: 'tvshows', label: 'Diziler' },
     { id: 'music', label: 'Müzikler' },
     { id: 'restaurants', label: 'Mekanlar' },
-    { id: 'popular', label: 'Popüler' },
   ];
 
   return (
@@ -403,27 +407,26 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
               ))}
             </div>
 
-            {/* Recommendation Type Filter - Hide for Popular tab */}
-            {activeTab !== 'popular' && (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 text-gray-300">
-                  <Filter className="w-4 h-4 icon-gradient" />
-                  <span className="text-sm">Öneri Türü:</span>
-                </div>
-                <div className="relative">
-                  <select
-                    value={recommendationType}
-                    onChange={(e) => setRecommendationType(e.target.value as any)}
-                    className="appearance-none bg-black/50 border border-gray-700/50 rounded-xl px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm"
-                  >
-                    <option value="hybrid">Hibrit (Akıllı + Kullanıcılar)</option>
-                    <option value="smart-only">Sadece Akıllı</option>
+            {/* Recommendation Type Filter */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-gray-300">
+                <Filter className="w-4 h-4 icon-gradient" />
+                <span className="text-sm">Öneri Türü:</span>
+              </div>
+              <div className="relative">
+                <select
+                  value={recommendationType}
+                  onChange={(e) => setRecommendationType(e.target.value as any)}
+                  className="appearance-none bg-black/50 border border-gray-700/50 rounded-xl px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm"
+                >
+                  <option value="hybrid">Hibrit (Akıllı + Kullanıcılar)</option>
+                  <option value="smart-only">Sadece Akıllı</option>
                   <option value="collaborative">Benzer Kullanıcılar</option>
+                  <option value="popular">Popüler (TMDB)</option>
                 </select>
                 <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
             </div>
-            )}
           </div>
           
           {/* Müzik Filtreleri - Sadece müzik sekmesinde göster */}
@@ -530,6 +533,7 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
               {recommendationType === 'smart-only' && <Brain className="w-4 h-4 text-white" />}
               {recommendationType === 'collaborative' && <Users className="w-4 h-4 text-white" />}
               {recommendationType === 'hybrid' && <Sparkles className="w-4 h-4 text-white" />}
+              {recommendationType === 'popular' && <Star className="w-4 h-4 text-white" />}
             </div>
             <div>
               <h3 className="text-lg font-medium text-white mb-2">
@@ -544,6 +548,9 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
                 )}
                 {recommendationType === 'collaborative' && (
                   <p>Sizinle benzer zevklere sahip kullanıcıların beğendikleri içerikleri öneriyoruz.</p>
+                )}
+                {recommendationType === 'popular' && (
+                  <p>TMDB'den en popüler ve yüksek puanlı film ve dizileri öneriyoruz.</p>
                 )}
               </div>
             </div>
