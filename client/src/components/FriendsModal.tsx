@@ -111,6 +111,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, ini
 
       setSearchResults(prev => updateUserInList(prev));
       setSuggestions(prev => updateUserInList(prev));
+      setFollowers(prev => updateUserInList(prev)); // Takipçiler listesini de güncelle
       
       // Following listesini yeniden yükle
       const updatedFollowing = await friendsService.getFollowing();
@@ -134,6 +135,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, ini
 
       setSearchResults(prev => updateUserInList(prev));
       setSuggestions(prev => updateUserInList(prev));
+      setFollowers(prev => updateUserInList(prev)); // Takipçiler listesini de güncelle
       setFollowing(prev => prev.filter(user => user.id !== userId));
     } catch (error) {
       console.error('Takipten çıkarma hatası:', error);
@@ -208,10 +210,10 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, ini
                 e.stopPropagation();
                 handleUnfollow(user.id);
               }}
-              className="px-3 py-1.5 bg-green-600/20 text-green-400 rounded-lg hover:bg-red-600/20 hover:text-red-400 transition-colors text-sm flex items-center space-x-1"
+              className="px-3 py-1.5 bg-gray-600/20 text-gray-300 rounded-lg hover:bg-red-600/20 hover:text-red-400 transition-colors text-sm flex items-center space-x-1 border border-gray-600/30"
             >
               <UserMinus size={14} />
-              <span>Arkadaş</span>
+              <span>Takip Ediliyor</span>
             </button>
           ) : (
             <button
@@ -219,7 +221,7 @@ export const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, ini
                 e.stopPropagation();
                 handleFollow(user.id);
               }}
-              className="px-3 py-1.5 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors text-sm flex items-center space-x-1"
+              className="px-3 py-1.5 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors text-sm flex items-center space-x-1 border border-blue-600/30"
             >
               <UserPlus size={14} />
               <span>Takip Et</span>
