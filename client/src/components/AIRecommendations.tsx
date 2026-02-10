@@ -9,7 +9,7 @@ interface AIRecommendationsProps {
 }
 
 export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentAdded }) => {
-  const [activeTab, setActiveTab] = useState<'all' | 'movies' | 'tvshows' | 'music' | 'restaurants'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'movies' | 'tvshows' | 'music' | 'restaurants' | 'popular'>('all');
   const [recommendationType, setRecommendationType] = useState<'hybrid' | 'smart-only' | 'collaborative'>('hybrid');
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +25,15 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
     try {
       let allRecs: any[] = [];
 
-      if (activeTab === 'all') {
+      // Popüler sekmesi için TMDB'den popüler içerikleri getir
+      if (activeTab === 'popular') {
+        const popularMovies = await fetchPopularFromTMDB('movie');
+        const popularTV = await fetchPopularFromTMDB('tv');
+        allRecs = [
+          ...popularMovies.map((rec: any) => ({ ...rec, category: 'movie' })),
+          ...popularTV.map((rec: any) => ({ ...rec, category: 'tvshow' }))
+        ];
+      } else if (activeTab === 'all') {
         const [movieRecs, tvRecs, musicRecs, restaurantRecs] = await Promise.all([
           getRecommendationsByType('MOVIE'),
           getRecommendationsByType('TV_SHOW'),
@@ -62,6 +70,68 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
       console.error('Error fetching recommendations:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const getRecommendationsByType = async (type: 'MOVIE' | 'TV_SHOW' | 'MUSIC' | 'RESTAURANT') => {
+    try {
+      console.log('=== FETCHING RECOMMENDATIONS ===');
+      console.log('Recommendation type filter:', recommendationType);
+      console.log('Content type:', type);
+      
+      let result;
+      switch (recommendationType) {
+        case 'smart-only':
+          console.log('Calling getAIOnlySuggestions');
+          result = await recommendationService.getAIOnlySuggestions(type);
+          break;
+        case 'collaborative':
+          console.log('Calling getCollaborativeSuggestions');
+          result = await recommendationService.getCollaborativeSuggestions(type);
+          break;
+        default:
+          console.log('Calling getAISuggestions (hybrid)');
+          result = await recommendationService.getAISuggestions(type);
+          break;
+      }
+      
+      console.log('API result:', result);
+      return result;
+    } catch (error) {
+      console.error(`Error fetching ${type} recommendations:`, error);
+      console.error('Full error details:', (error as any).response?.data || (error as any).message);
+      return [];
+    }
+  };
+
+  const fetchPopularFromTMDB = async (mediaType: 'movie' | 'tv') => {
+    try {
+      const TMDB_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNDM3MzI3Y2Y5ZDI0YmNmMWJhODNlNTA1ZjhlMGEwNyIsIm5iZiI6MTc2OTYyMjYzNy4xOTUwMDAyLCJzdWIiOiI2OTdhNGM2ZDExM2YwNDkzYzExMmY2Y2EiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.cGdshBSCvpMofvGRBL3-GsEctxy2Gx_Ju6ds0BE5Mqo';
+      const response = await fetch(
+        `https://api.themoviedb.org/3/${mediaType}/popular?language=tr-TR&page=1`,
+        {
+          headers: {
+            'Authorization': `Bearer ${TMDB_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      const data = await response.json();
+      return data.results.slice(0, 20).map((item: any) => ({
+        id: `tmdb-${item.id}`,
+        title: item.title || item.name,
+        type: mediaType === 'movie' ? 'MOVIE' : 'TV_SHOW',
+        genre: item.genre_ids?.join(',') || '',
+        year: item.release_date?.split('-')[0] || item.first_air_date?.split('-')[0],
+        poster: item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : null,
+        tmdbId: item.id,
+        confidence: Math.floor(item.vote_average * 10), // 0-100 arası skor
+        source: 'TMDB Popüler'
+      }));
+    } catch (error) {
+      console.error(`Error fetching popular ${mediaType}:`, error);
+      return [];
     }
   };
 
@@ -272,6 +342,7 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
     { id: 'tvshows', label: 'Diziler' },
     { id: 'music', label: 'Müzikler' },
     { id: 'restaurants', label: 'Mekanlar' },
+    { id: 'popular', label: 'Popüler' },
   ];
 
   return (
@@ -333,25 +404,27 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
               ))}
             </div>
 
-            {/* Recommendation Type Filter */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-gray-300">
-                <Filter className="w-4 h-4 icon-gradient" />
-                <span className="text-sm">Öneri Türü:</span>
-              </div>
-              <div className="relative">
-                <select
-                  value={recommendationType}
-                  onChange={(e) => setRecommendationType(e.target.value as any)}
-                  className="appearance-none bg-black/50 border border-gray-700/50 rounded-xl px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm"
-                >
-                  <option value="hybrid">Hibrit (Akıllı + Kullanıcılar)</option>
-                  <option value="smart-only">Sadece Akıllı</option>
+            {/* Recommendation Type Filter - Hide for Popular tab */}
+            {activeTab !== 'popular' && (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-gray-300">
+                  <Filter className="w-4 h-4 icon-gradient" />
+                  <span className="text-sm">Öneri Türü:</span>
+                </div>
+                <div className="relative">
+                  <select
+                    value={recommendationType}
+                    onChange={(e) => setRecommendationType(e.target.value as any)}
+                    className="appearance-none bg-black/50 border border-gray-700/50 rounded-xl px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm"
+                  >
+                    <option value="hybrid">Hibrit (Akıllı + Kullanıcılar)</option>
+                    <option value="smart-only">Sadece Akıllı</option>
                   <option value="collaborative">Benzer Kullanıcılar</option>
                 </select>
                 <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
             </div>
+            )}
           </div>
         </div>
 
