@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Activity, Film, Monitor, Headphones, MapPin, Plus, RefreshCw } from 'lucide-react';
+import { Sparkles, Activity, Film, Monitor, Headphones, MapPin, Plus, RefreshCw, Eye } from 'lucide-react';
 import { contentService } from '../services/contentService';
 import { recommendationService } from '../services/recommendationService';
+import { SilentStalk } from './SilentStalk';
 
 interface DashboardProps {
   user: any;
@@ -23,6 +24,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onAddContent, onNavi
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
   const [addingItems, setAddingItems] = useState<Set<string>>(new Set());
+  const [silentStalkOpen, setSilentStalkOpen] = useState(false);
 
   useEffect(() => {
     fetchUserStats();
@@ -298,12 +300,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onAddContent, onNavi
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8 animate-fade-in-up">
-          <h1 className="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-            Geld'e hoş geldin, {user?.name || user?.username}
-          </h1>
-          <p className="text-gray-400 text-lg">
-            Zevklerini keşfet ve yeni öneriler al
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Geld'e hoş geldin, {user?.name || user?.username}
+              </h1>
+              <p className="text-gray-400 text-lg">
+                Zevklerini keşfet ve yeni öneriler al
+              </p>
+            </div>
+            <button
+              onClick={() => setSilentStalkOpen(true)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl flex items-center space-x-2 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 border border-purple-500/30"
+            >
+              <Eye className="w-5 h-5" />
+              <span>Sessiz Stalk</span>
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -419,6 +432,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onAddContent, onNavi
           </div>
         </div>
       </div>
+      
+      {/* Silent Stalk Modal */}
+      {silentStalkOpen && (
+        <SilentStalk onClose={() => setSilentStalkOpen(false)} />
+      )}
     </div>
   );
 };

@@ -7,6 +7,7 @@ import contentRoutes from './routes/content';
 import recommendationRoutes from './routes/recommendations';
 import searchRoutes from './routes/search';
 import friendsRoutes from './routes/friends';
+import activityRoutes from './routes/activity';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use('/api/content', contentRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/friends', friendsRoutes);
+app.use('/api/activity', activityRoutes);
 
 // Health check - Updated for production deployment
 app.get('/api/health', (req, res) => {
