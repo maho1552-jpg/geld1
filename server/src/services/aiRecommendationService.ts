@@ -988,27 +988,64 @@ JSON Array formatında ${limit} öneri:`;
   }
   private async fetchiTunesRecommendations(limit: number): Promise<any[]> {
     try {
-      // Türkiye'de popüler şarkıları almak için genel terimler kullan
-      const popularTerms = ['pop', 'türkçe pop', 'rock', 'alternative', 'indie'];
-      const randomTerm = popularTerms[Math.floor(Math.random() * popularTerms.length)];
+      // Farklı kategoriler ve diller için müzik önerileri
+      const musicCategories = [
+        // Türkçe müzikler
+        { term: 'türkçe pop', country: 'TR', language: 'Türkçe', category: 'Pop' },
+        { term: 'türkçe rock', country: 'TR', language: 'Türkçe', category: 'Rock' },
+        { term: 'türkçe rap', country: 'TR', language: 'Türkçe', category: 'Rap' },
+        { term: 'arabesk', country: 'TR', language: 'Türkçe', category: 'Arabesk' },
+        { term: 'türk sanat müziği', country: 'TR', language: 'Türkçe', category: 'Türk Sanat Müziği' },
+        { term: 'türkçe alternative', country: 'TR', language: 'Türkçe', category: 'Alternative' },
+        
+        // Yabancı müzikler
+        { term: 'pop', country: 'US', language: 'Yabancı', category: 'Pop' },
+        { term: 'rock', country: 'US', language: 'Yabancı', category: 'Rock' },
+        { term: 'hip hop', country: 'US', language: 'Yabancı', category: 'Hip-Hop' },
+        { term: 'electronic', country: 'US', language: 'Yabancı', category: 'Electronic' },
+        { term: 'indie', country: 'US', language: 'Yabancı', category: 'Indie' },
+        { term: 'r&b', country: 'US', language: 'Yabancı', category: 'R&B' },
+        { term: 'jazz', country: 'US', language: 'Yabancı', category: 'Jazz' },
+        { term: 'classical', country: 'US', language: 'Yabancı', category: 'Klasik Müzik' },
+        { term: 'metal', country: 'US', language: 'Yabancı', category: 'Metal' },
+        { term: 'country', country: 'US', language: 'Yabancı', category: 'Country' }
+      ];
 
-      const response = await axios.get('https://itunes.apple.com/search', {
-        params: {
-          term: randomTerm,
-          media: 'music',
-          entity: 'song',
-          limit: limit * 2,
-          country: 'TR',
-          sort: 'popular'
-        },
-        timeout: 5000
-      });
+      const allResults: any[] = [];
 
-      const results = response.data.results;
+      // Her kategoriden birkaç şarkı al
+      for (const category of musicCategories) {
+        try {
+          const response = await axios.get('https://itunes.apple.com/search', {
+            params: {
+              term: category.term,
+              media: 'music',
+              entity: 'song',
+              limit: 5,
+              country: category.country,
+              sort: 'popular'
+            },
+            timeout: 5000
+          });
+
+          if (response.data.results && response.data.results.length > 0) {
+            const tracks = response.data.results.map((track: any) => ({
+              ...track,
+              musicLanguage: category.language,
+              musicCategory: category.category
+            }));
+            allResults.push(...tracks);
+          }
+        } catch (error) {
+          console.error(`Error fetching ${category.term}:`, error);
+        }
+      }
+
+      // Rastgele karıştır ve sınırla
+      const shuffled = allResults.sort(() => Math.random() - 0.5);
       
-      return results.slice(0, limit).map((track: any, index: number) => {
-        // iTunes API'den gelen öneriler için yüksek confidence
-        const baseConfidence = 0.75; // iTunes gerçek veri olduğu için yüksek
+      return shuffled.slice(0, limit).map((track: any, index: number) => {
+        const baseConfidence = 0.75;
         const positionPenalty = index * 0.02;
         const randomVariation = (Math.random() - 0.5) * 0.05;
         
@@ -1021,9 +1058,11 @@ JSON Array formatında ${limit} öneri:`;
           title: track.trackName,
           artist: track.artistName,
           album: track.collectionName,
-          genre: track.primaryGenreName || 'Pop',
+          genre: track.primaryGenreName || track.musicCategory || 'Pop',
+          musicLanguage: track.musicLanguage, // Türkçe veya Yabancı
+          musicCategory: track.musicCategory, // Pop, Rock, Rap, vb.
           year: track.releaseDate ? new Date(track.releaseDate).getFullYear() : new Date().getFullYear(),
-          reason: `iTunes'da popüler - ${track.primaryGenreName} kategorisinde`,
+          reason: `${track.musicLanguage} ${track.musicCategory} - iTunes'da popüler`,
           image: track.artworkUrl100 ? track.artworkUrl100.replace('100x100', '300x300') : null,
           itunesId: track.trackId,
           preview_url: track.previewUrl,

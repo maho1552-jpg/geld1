@@ -15,10 +15,14 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [addingItems, setAddingItems] = useState<Set<string>>(new Set());
+  
+  // Müzik filtreleri
+  const [musicLanguageFilter, setMusicLanguageFilter] = useState<'all' | 'turkish' | 'foreign'>('all');
+  const [musicCategoryFilter, setMusicCategoryFilter] = useState<'all' | string>('all');
 
   useEffect(() => {
     fetchRecommendations();
-  }, [activeTab, recommendationType]);
+  }, [activeTab, recommendationType, musicLanguageFilter, musicCategoryFilter]);
 
   const fetchRecommendations = async () => {
     setIsLoading(true);
@@ -63,6 +67,27 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
       }
 
       allRecs.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
+      
+      // Müzik sekmesinde filtreleme uygula
+      if (activeTab === 'music' || (activeTab === 'all' && allRecs.some(r => r.category === 'music'))) {
+        allRecs = allRecs.filter(rec => {
+          // Sadece müzik önerilerini filtrele
+          if (rec.category !== 'music' && rec.type !== 'MUSIC') return true;
+          
+          // Dil filtresi
+          if (musicLanguageFilter !== 'all') {
+            if (musicLanguageFilter === 'turkish' && rec.musicLanguage !== 'Türkçe') return false;
+            if (musicLanguageFilter === 'foreign' && rec.musicLanguage !== 'Yabancı') return false;
+          }
+          
+          // Kategori filtresi
+          if (musicCategoryFilter !== 'all') {
+            if (rec.musicCategory !== musicCategoryFilter) return false;
+          }
+          
+          return true;
+        });
+      }
       
       setRecommendations(allRecs);
       setLastUpdated(new Date());
@@ -305,6 +330,11 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
     }
   };
 
+  const musicCategories = [
+    'Pop', 'Rock', 'Rap', 'Hip-Hop', 'Arabesk', 'Türk Sanat Müziği', 
+    'Alternative', 'Electronic', 'R&B', 'Jazz', 'Klasik Müzik', 'Metal', 'Country', 'Indie'
+  ];
+
   const tabItems = [
     { id: 'all', label: 'Tümü' },
     { id: 'movies', label: 'Filmler' },
@@ -395,6 +425,68 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({ onContentA
             </div>
             )}
           </div>
+          
+          {/* Müzik Filtreleri - Sadece müzik sekmesinde göster */}
+          {activeTab === 'music' && (
+            <div className="mt-4 pt-4 border-t border-gray-800/50">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
+                {/* Dil Filtresi */}
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-300">Dil:</span>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setMusicLanguageFilter('all')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                        musicLanguageFilter === 'all'
+                          ? 'bg-gradient-to-r from-purple-600 to-black text-white shadow-lg'
+                          : 'bg-black/50 text-gray-400 hover:text-white hover:bg-gray-800/50 border border-gray-700/50'
+                      }`}
+                    >
+                      Tümü
+                    </button>
+                    <button
+                      onClick={() => setMusicLanguageFilter('turkish')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                        musicLanguageFilter === 'turkish'
+                          ? 'bg-gradient-to-r from-purple-600 to-black text-white shadow-lg'
+                          : 'bg-black/50 text-gray-400 hover:text-white hover:bg-gray-800/50 border border-gray-700/50'
+                      }`}
+                    >
+                      Türkçe
+                    </button>
+                    <button
+                      onClick={() => setMusicLanguageFilter('foreign')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                        musicLanguageFilter === 'foreign'
+                          ? 'bg-gradient-to-r from-purple-600 to-black text-white shadow-lg'
+                          : 'bg-black/50 text-gray-400 hover:text-white hover:bg-gray-800/50 border border-gray-700/50'
+                      }`}
+                    >
+                      Yabancı
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Kategori Filtresi */}
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-300">Kategori:</span>
+                  <div className="relative">
+                    <select
+                      value={musicCategoryFilter}
+                      onChange={(e) => setMusicCategoryFilter(e.target.value)}
+                      className="appearance-none bg-black/50 border border-gray-700/50 rounded-xl px-4 py-2 pr-8 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm min-w-[180px]"
+                    >
+                      <option value="all">Tüm Kategoriler</option>
+                      {musicCategories.map(category => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Recommendations Grid */}
@@ -479,11 +571,19 @@ const RecommendationCard: React.FC<{
 
   const getSubtitle = () => {
     const parts = [];
+    
+    // Müzik için dil ve kategori bilgisi ekle (en başa)
+    if (recommendation.type === 'MUSIC') {
+      if (recommendation.musicLanguage) parts.push(recommendation.musicLanguage);
+      if (recommendation.musicCategory) parts.push(recommendation.musicCategory);
+    }
+    
     if (recommendation.year) parts.push(recommendation.year);
     if (recommendation.genre) parts.push(recommendation.genre);
     if (recommendation.director) parts.push(`Yön: ${recommendation.director}`);
     if (recommendation.cuisine) parts.push(recommendation.cuisine);
     if (recommendation.location) parts.push(recommendation.location);
+    
     return parts.join(' • ');
   };
 
