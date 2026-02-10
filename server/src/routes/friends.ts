@@ -5,6 +5,25 @@ import { authMiddleware } from '../middleware/auth';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// Test endpoint - tüm kullanıcıları listele
+router.get('/test-users', authMiddleware, async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true
+      },
+      take: 10
+    });
+    res.json({ count: users.length, users });
+  } catch (error) {
+    console.error('Test users error:', error);
+    res.status(500).json({ error: 'Error fetching users' });
+  }
+});
+
 // Kullanıcı arama
 router.get('/search', authMiddleware, async (req, res) => {
   try {
@@ -21,7 +40,7 @@ router.get('/search', authMiddleware, async (req, res) => {
       return res.json([]);
     }
 
-    // Kullanıcıları username, name veya email ile ara
+    // Kullanıcıları username, name veya email ile ara (case-insensitive)
     const users = await prisma.user.findMany({
       where: {
         AND: [
@@ -34,17 +53,20 @@ router.get('/search', authMiddleware, async (req, res) => {
             OR: [
               {
                 username: {
-                  contains: query
+                  contains: query,
+                  mode: 'insensitive'
                 }
               },
               {
                 name: {
-                  contains: query
+                  contains: query,
+                  mode: 'insensitive'
                 }
               },
               {
                 email: {
-                  contains: query
+                  contains: query,
+                  mode: 'insensitive'
                 }
               }
             ]
@@ -62,6 +84,8 @@ router.get('/search', authMiddleware, async (req, res) => {
       },
       take: 20
     });
+
+    console.log('Search results:', { query, foundUsers: users.length, users: users.map(u => ({ username: u.username, name: u.name })) });
 
     // Her kullanıcı için takip durumunu ve sayıları kontrol et
     const usersWithFollowStatus = await Promise.all(
